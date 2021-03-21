@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 // Symmetric key container, includes key generation methods
@@ -34,17 +35,101 @@ class AesSymmetricKey {
   }
 }
 
-// Utility class for aes byte encryption
-class AesEncrypt {}
+// Utility class for aes message encryption
+class AesEncrypt {
+  late ExpandedKey _key;
+
+  AesEncrypt(AesSymmetricKey key) {
+    var sbox = new Sbox();
+    this._key = new ExpandedKey(key, sbox);
+  }
+
+  String encrypt(String msg) {
+    List<int> data = EncryptedMessage.convertStringToByteArray(msg);
+    data = [
+      0x01,
+      0x23,
+      0x45,
+      0x67,
+      0x89,
+      0xab,
+      0xcd,
+      0xef,
+      0xfe,
+      0xdc,
+      0xba,
+      0x98,
+      0x76,
+      0x54,
+      0x32,
+      0x10
+    ];
+    var encryptedMsg = new EncryptedMessage(data);
+    var itr = encryptedMsg.getBlockIterator();
+    itr.moveNext();
+    do {
+      this._encryptBlock(itr.current);
+    } while (itr.moveNext());
+    return "";
+  }
+
+  void _encryptBlock(EncryptedBlock blk) {}
+}
 
 // Utility class for aes message decryption
 class AesDecrypt {}
 
 // Container class for encrypted blocks
-class EncryptedMessage {}
+class EncryptedMessage {
+  List<EncryptedBlock> _blocks = [];
+
+  EncryptedMessage(List<int> data) {
+    var bytesProcessed = 0;
+    while (bytesProcessed < data.length) {
+      if (data.length - bytesProcessed > 16) {
+        this._blocks.add(new EncryptedBlock(
+            data.sublist(bytesProcessed, bytesProcessed + 16)));
+      } else {
+        var dataBlock = new List<int>.from(data.sublist(bytesProcessed));
+        // Pad last block with zeros
+        dataBlock.addAll(new List.generate(
+            16 - (data.length - bytesProcessed), (index) => 0));
+        this._blocks.add(new EncryptedBlock(dataBlock));
+      }
+
+      bytesProcessed += 16;
+    }
+  }
+
+  static List<int> convertStringToByteArray(String str) {
+    return utf8.encode(str);
+  }
+
+  Iterator getBlockIterator() {
+    return this._blocks.iterator;
+  }
+
+  void addRoundKey() {}
+
+  void substituteBytes() {}
+
+  void shiftRows() {}
+
+  void mixColumns() {}
+}
 
 // Encrypted block of 16 bytes
-class EncryptedBlock {}
+class EncryptedBlock {
+  List<Word> data = [];
+
+  EncryptedBlock(List<int> data) {
+    for (var i = 0; i < 4; i++) {
+      var start = i * 4;
+      var end = start + 4;
+      this.data.add(new Word.fromByteArray(data.sublist(start, end)));
+    }
+  }
+}
 
 // Implements Rijndael Key Schedule for key expansion
 class ExpandedKey {
@@ -58,32 +143,34 @@ class ExpandedKey {
       var end = start + 4;
       this._words.add(new Word.fromByteArray(key.getBytes(start, end)));
     }
+
+    this._expand();
   }
 
-  void expand() {
+  void _expand() {
     for (var roundNumber = 1; roundNumber < 11; roundNumber++) {
       for (var wordNumber = 0; wordNumber < 4; wordNumber++) {
         var previousWord = this._words[roundNumber * 4 + wordNumber - 1];
         var fourWordsAgo = this._words[roundNumber * 4 + wordNumber - 4];
         if (wordNumber == 0) {
-          this.modifyFirstWordInRoundKey(previousWord);
+          this._modifyFirstWordInRoundKey(previousWord);
         }
         this._words.add(previousWord ^ fourWordsAgo);
       }
     }
   }
 
-  void modifyFirstWordInRoundKey(Word word) {
+  void _modifyFirstWordInRoundKey(Word word) {
     word << 1;
-    for (var i = 0; i < 4; i++) {
-      word.bytes[i] = this._sbox.substitute(word.bytes[i]);
-    }
+    this._sbox.substitute(word);
     word.xorEquals(this._roundConstant);
     this._roundConstant.bytes[0] =
         this._sbox.galoisMultiplication(2, this._roundConstant.bytes[0]);
   }
 
-  void getRoundKey(int round) {}
+  List<Word> getRoundKey(int round) {
+    return this._words.sublist(round * 4, round * 4 + 4);
+  }
 }
 
 // Represents a single round key word
@@ -124,9 +211,7 @@ class Word {
   }
 }
 
-// Contains addRoundKey, substituteBytes, shiftRows and mixColumns
-class AesOperations {}
-
+// Represents the rijndael byte substitution box
 class Sbox {
   late List<int> _logTable;
   // Anti-log is exponentiation table
@@ -198,7 +283,9 @@ class Sbox {
     return p % this._fieldLimit;
   }
 
-  int substitute(int a) {
-    return this._sBox[a];
+  void substitute(Word word) {
+    for (var i = 0; i < 4; i++) {
+      word.bytes[i] = this._sBox[word.bytes[i]];
+    }
   }
 }
