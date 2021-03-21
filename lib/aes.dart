@@ -38,9 +38,11 @@ class AesSymmetricKey {
 // Utility class for aes message encryption
 class AesEncrypt {
   late ExpandedKey _key;
+  late Sbox _sbox;
 
   AesEncrypt(AesSymmetricKey key) {
     var sbox = new Sbox();
+    this._sbox = sbox;
     this._key = new ExpandedKey(key, sbox);
   }
 
@@ -64,16 +66,28 @@ class AesEncrypt {
       0x32,
       0x10
     ];
-    var encryptedMsg = new EncryptedMessage(data);
-    var itr = encryptedMsg.getBlockIterator();
-    itr.moveNext();
-    do {
-      this._encryptBlock(itr.current);
-    } while (itr.moveNext());
+    var encryptedMsg = new EncryptedMessage(this._key, data);
+
+    for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
+      var block = encryptedMsg.blocks[blkNum];
+      for (var roundNum = 0; roundNum < 11; roundNum++) {
+        if (roundNum == 0) {
+          encryptedMsg.addRoundKey(block, roundNum);
+        } else if (roundNum == 10) {
+          encryptedMsg.substituteBytes(block, this._sbox);
+          encryptedMsg.shiftRows(block);
+          encryptedMsg.addRoundKey(block, roundNum);
+        } else {
+          encryptedMsg.substituteBytes(block, this._sbox);
+          encryptedMsg.shiftRows(block);
+          encryptedMsg.mixColumns(block);
+          encryptedMsg.addRoundKey(block, roundNum);
+        }
+      }
+    }
+
     return "";
   }
-
-  void _encryptBlock(EncryptedBlock blk) {}
 }
 
 // Utility class for aes message decryption
@@ -81,20 +95,21 @@ class AesDecrypt {}
 
 // Container class for encrypted blocks
 class EncryptedMessage {
-  List<EncryptedBlock> _blocks = [];
+  List<EncryptedBlock> blocks = [];
+  ExpandedKey _key;
 
-  EncryptedMessage(List<int> data) {
+  EncryptedMessage(this._key, List<int> data) {
     var bytesProcessed = 0;
     while (bytesProcessed < data.length) {
       if (data.length - bytesProcessed > 16) {
-        this._blocks.add(new EncryptedBlock(
+        this.blocks.add(new EncryptedBlock(
             data.sublist(bytesProcessed, bytesProcessed + 16)));
       } else {
         var dataBlock = new List<int>.from(data.sublist(bytesProcessed));
         // Pad last block with zeros
         dataBlock.addAll(new List.generate(
             16 - (data.length - bytesProcessed), (index) => 0));
-        this._blocks.add(new EncryptedBlock(dataBlock));
+        this.blocks.add(new EncryptedBlock(dataBlock));
       }
 
       bytesProcessed += 16;
@@ -105,17 +120,22 @@ class EncryptedMessage {
     return utf8.encode(str);
   }
 
-  Iterator getBlockIterator() {
-    return this._blocks.iterator;
+  void addRoundKey(EncryptedBlock blk, int round) {
+    var roundKey = this._key.getRoundKey(round);
+    for (var i = 0; i < 4; i++) {
+      blk.data[i].xorEquals(roundKey[i]);
+    }
   }
 
-  void addRoundKey() {}
+  void substituteBytes(EncryptedBlock blk, Sbox box) {
+    for (var i = 0; i < 4; i++) {
+      box.substitute(blk.data[i]);
+    }
+  }
 
-  void substituteBytes() {}
+  void shiftRows(EncryptedBlock blk) {}
 
-  void shiftRows() {}
-
-  void mixColumns() {}
+  void mixColumns(EncryptedBlock blk) {}
 }
 
 // Encrypted block of 16 bytes
@@ -150,7 +170,9 @@ class ExpandedKey {
   void _expand() {
     for (var roundNumber = 1; roundNumber < 11; roundNumber++) {
       for (var wordNumber = 0; wordNumber < 4; wordNumber++) {
-        var previousWord = this._words[roundNumber * 4 + wordNumber - 1];
+        // Create a new word here to avoid corrupting previous round keys
+        var previousWord = new Word.fromByteArray(
+            _words[roundNumber * 4 + wordNumber - 1].bytes);
         var fourWordsAgo = this._words[roundNumber * 4 + wordNumber - 4];
         if (wordNumber == 0) {
           this._modifyFirstWordInRoundKey(previousWord);
