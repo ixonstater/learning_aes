@@ -1,20 +1,37 @@
 import 'dart:math';
 
-import 'dart:typed_data';
-
 // Symmetric key container, includes key generation methods
 class AesSymmetricKey {
-  late ByteData _keyBytes;
+  late List<int> _keyBytes;
 
   AesSymmetricKey() {
-    _keyBytes = new ByteData(128);
-    var rng = Random.secure();
-    for (var i = 0; i < 128; i++) {
-      _keyBytes.setInt8(i, rng.nextInt(255));
-    }
+    // var rng = Random.secure();
+    // _keyBytes = List.generate(16, (index) => rng.nextInt(255));
+    _keyBytes = [
+      0x0f,
+      0x15,
+      0x71,
+      0xc9,
+      0x47,
+      0xd9,
+      0xe8,
+      0x59,
+      0x0c,
+      0xb7,
+      0xad,
+      0xd6,
+      0xaf,
+      0x7f,
+      0x67,
+      0x98
+    ];
   }
   AesSymmetricKey.fromKeyFile() {}
   AesSymmetricKey.fromKeyString() {}
+
+  List<int> getBytes(int start, int end) {
+    return this._keyBytes.sublist(start, end);
+  }
 }
 
 // Utility class for aes byte encryption
@@ -30,15 +47,87 @@ class EncryptedMessage {}
 class EncryptedBlock {}
 
 // Implements Rijndael Key Schedule for key expansion
-class ExpandedKey {}
+class ExpandedKey {
+  List<Word> _words = [];
+  Word _roundConstant = new Word.fromByteArray([1, 0, 0, 0]);
+  Sbox _sbox;
 
-// Represents a single round key
-class RoundKey {}
+  ExpandedKey(AesSymmetricKey key, this._sbox) {
+    for (var i = 0; i < 4; i++) {
+      var start = i * 4;
+      var end = start + 4;
+      this._words.add(new Word.fromByteArray(key.getBytes(start, end)));
+    }
+  }
+
+  void expand() {
+    for (var roundNumber = 1; roundNumber < 11; roundNumber++) {
+      for (var wordNumber = 0; wordNumber < 4; wordNumber++) {
+        var previousWord = this._words[roundNumber * 4 + wordNumber - 1];
+        var fourWordsAgo = this._words[roundNumber * 4 + wordNumber - 4];
+        if (wordNumber == 0) {
+          this.modifyFirstWordInRoundKey(previousWord);
+        }
+        this._words.add(previousWord ^ fourWordsAgo);
+      }
+    }
+  }
+
+  void modifyFirstWordInRoundKey(Word word) {
+    word << 1;
+    for (var i = 0; i < 4; i++) {
+      word.bytes[i] = this._sbox.substitute(word.bytes[i]);
+    }
+    word.xorEquals(this._roundConstant);
+    this._roundConstant.bytes[0] =
+        this._sbox.galoisMultiplication(2, this._roundConstant.bytes[0]);
+  }
+
+  void getRoundKey(int round) {}
+}
+
+// Represents a single round key word
+class Word {
+  List<int> bytes = new List.generate(4, (index) => 0);
+
+  Word() {}
+
+  Word.fromByteArray(List<int> bytes) {
+    this.bytes = bytes;
+  }
+
+  Word operator ^(Word op) {
+    Word result = new Word();
+    for (var i = 0; i < 4; i++) {
+      result.bytes[i] = this.bytes[i] ^ op.bytes[i];
+    }
+
+    return result;
+  }
+
+  void xorEquals(Word op) {
+    for (var i = 0; i < 4; i++) {
+      this.bytes[i] = this.bytes[i] ^ op.bytes[i];
+    }
+  }
+
+  void operator <<(int shift) {
+    var newBytes = this.bytes.sublist(shift);
+    newBytes.addAll(this.bytes.sublist(0, shift));
+    this.bytes = newBytes;
+  }
+
+  void printWord() {
+    this.bytes.forEach((element) {
+      print(element.toRadixString(16));
+    });
+  }
+}
 
 // Contains addRoundKey, substituteBytes, shiftRows and mixColumns
 class AesOperations {}
 
-class SboxCreator {
+class Sbox {
   late List<int> _logTable;
   // Anti-log is exponentiation table
   late List<int> _antiLogTable;
@@ -46,13 +135,14 @@ class SboxCreator {
   final int _generator = 0xe5;
   final int _fieldLimit = 256;
 
-  SboxCreator() {
+  Sbox() {
     _logTable = new List.generate(this._fieldLimit, (index) => 0);
     _antiLogTable = new List.generate(this._fieldLimit, (index) => 0);
     _sBox = new List.generate(this._fieldLimit, (index) => 0);
+    this._initialize();
   }
 
-  void initialize() {
+  void _initialize() {
     this._populateLogAndAntilog();
     this._fillSboxWithMultiplicativeInverse();
     this._applyAffineTransformToSbox();
@@ -106,5 +196,9 @@ class SboxCreator {
 
     // Convert back to unsigned 8 bit int
     return p % this._fieldLimit;
+  }
+
+  int substitute(int a) {
+    return this._sBox[a];
   }
 }
