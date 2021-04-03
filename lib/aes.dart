@@ -1,31 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 // Symmetric key container, includes key generation methods
 class AesSymmetricKey {
   late List<int> _keyBytes;
 
   AesSymmetricKey() {
-    // var rng = Random.secure();
-    // _keyBytes = List.generate(16, (index) => rng.nextInt(255));
-    _keyBytes = [
-      0x0f,
-      0x15,
-      0x71,
-      0xc9,
-      0x47,
-      0xd9,
-      0xe8,
-      0x59,
-      0x0c,
-      0xb7,
-      0xad,
-      0xd6,
-      0xaf,
-      0x7f,
-      0x67,
-      0x98
-    ];
+    var rng = Random.secure();
+    _keyBytes = List.generate(16, (index) => rng.nextInt(255));
   }
   AesSymmetricKey.fromKeyFile() {}
   AesSymmetricKey.fromKeyString() {}
@@ -48,24 +31,6 @@ class AesEncrypt {
 
   String encrypt(String msg) {
     List<int> data = EncryptedMessage.convertStringToByteArray(msg);
-    data = [
-      0x01,
-      0x23,
-      0x45,
-      0x67,
-      0x89,
-      0xab,
-      0xcd,
-      0xef,
-      0xfe,
-      0xdc,
-      0xba,
-      0x98,
-      0x76,
-      0x54,
-      0x32,
-      0x10
-    ];
     var encryptedMsg = new EncryptedMessage(this._key, data);
 
     for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
