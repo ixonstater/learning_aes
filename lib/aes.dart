@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 // Symmetric key container, includes key generation methods
 class AesSymmetricKey {
@@ -70,19 +69,21 @@ class AesEncrypt {
     var encryptedMsg = new EncryptedMessage(this._key, data);
 
     for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
-      var block = encryptedMsg.blocks[blkNum];
       for (var roundNum = 0; roundNum < 11; roundNum++) {
         if (roundNum == 0) {
-          encryptedMsg.addRoundKey(block, roundNum);
+          encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
         } else if (roundNum == 10) {
-          encryptedMsg.substituteBytes(block, this._sbox);
-          encryptedMsg.shiftRows(block);
-          encryptedMsg.addRoundKey(block, roundNum);
+          encryptedMsg.substituteBytes(encryptedMsg.blocks[blkNum], this._sbox);
+          encryptedMsg.blocks[blkNum] =
+              encryptedMsg.shiftRows(encryptedMsg.blocks[blkNum]);
+          encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
         } else {
-          encryptedMsg.substituteBytes(block, this._sbox);
-          encryptedMsg.shiftRows(block);
-          encryptedMsg.mixColumns(block);
-          encryptedMsg.addRoundKey(block, roundNum);
+          encryptedMsg.substituteBytes(encryptedMsg.blocks[blkNum], this._sbox);
+          encryptedMsg.blocks[blkNum] =
+              encryptedMsg.shiftRows(encryptedMsg.blocks[blkNum]);
+          encryptedMsg.blocks[blkNum] =
+              encryptedMsg.mixColumns(encryptedMsg.blocks[blkNum], this._sbox);
+          encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
         }
       }
     }
@@ -134,7 +135,7 @@ class EncryptedMessage {
     }
   }
 
-  void shiftRows(EncryptedBlock blk) {
+  EncryptedBlock shiftRows(EncryptedBlock blk) {
     var shiftedBlock = new EncryptedBlock.empty();
     var shiftSpaces = [0, 1, 2, 3];
     for (var row = 0; row < 4; row++) {
@@ -144,7 +145,7 @@ class EncryptedMessage {
       }
     }
 
-    blk = shiftedBlock;
+    return shiftedBlock;
   }
 
   int getNewColumnNumber(int column, int spacesShifted) {
@@ -156,7 +157,34 @@ class EncryptedMessage {
     }
   }
 
-  void mixColumns(EncryptedBlock blk) {}
+  EncryptedBlock mixColumns(EncryptedBlock blk, Sbox box) {
+    var matrix = [
+      Word.fromByteArray([2, 3, 1, 1]),
+      Word.fromByteArray([1, 2, 3, 1]),
+      Word.fromByteArray([1, 1, 2, 3]),
+      Word.fromByteArray([3, 1, 1, 2])
+    ];
+    var mixedBlock = new EncryptedBlock.empty();
+
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < 4; j++) {
+        mixedBlock.data[i].bytes[j] =
+            this.mixColumn(matrix[j], blk.data[i], box);
+      }
+    }
+
+    return mixedBlock;
+  }
+
+  int mixColumn(Word lhs, Word rhs, Sbox box) {
+    Word product = new Word();
+
+    for (var i = 0; i < 4; i++) {
+      product.bytes[i] = box.galoisMultiplication(lhs.bytes[i], rhs.bytes[i]);
+    }
+
+    return product.cumulativeXor();
+  }
 }
 
 // Encrypted block of 16 bytes
@@ -260,6 +288,10 @@ class Word {
     var newBytes = this.bytes.sublist(shift);
     newBytes.addAll(this.bytes.sublist(0, shift));
     this.bytes = newBytes;
+  }
+
+  int cumulativeXor() {
+    return bytes[0] ^ bytes[1] ^ bytes[2] ^ bytes[3];
   }
 
   void printWord() {
