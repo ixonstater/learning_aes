@@ -16,6 +16,10 @@ class AesSymmetricKey {
   List<int> getBytes(int start, int end) {
     return this._keyBytes.sublist(start, end);
   }
+
+  String toString() {
+    return base64.encode(_keyBytes);
+  }
 }
 
 // Utility class for aes message encryption
@@ -53,12 +57,9 @@ class AesEncrypt {
       }
     }
 
-    return "";
+    return encryptedMsg.toString();
   }
 }
-
-// Utility class for aes message decryption
-class AesDecrypt {}
 
 // Container class for encrypted blocks
 class EncryptedMessage {
@@ -150,6 +151,17 @@ class EncryptedMessage {
 
     return product.cumulativeXor();
   }
+
+  String toString() {
+    var result = <int>[];
+    this.blocks.forEach((block) {
+      block.data.forEach((word) {
+        result.addAll(word.bytes);
+      });
+    });
+
+    return base64.encode(result);
+  }
 }
 
 // Encrypted block of 16 bytes
@@ -221,6 +233,16 @@ class ExpandedKey {
 
   List<Word> getRoundKey(int round) {
     return this._words.sublist(round * 4, round * 4 + 4);
+  }
+
+  void printKey(int round) {
+    var key = this.getRoundKey(round);
+    key.forEach((word) {
+      word.bytes.forEach((byte) {
+        stdout.write(byte.toRadixString(16) + " ");
+      });
+      print("");
+    });
   }
 }
 
