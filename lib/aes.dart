@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 // Symmetric key container, includes key generation methods
@@ -133,7 +134,27 @@ class EncryptedMessage {
     }
   }
 
-  void shiftRows(EncryptedBlock blk) {}
+  void shiftRows(EncryptedBlock blk) {
+    var shiftedBlock = new EncryptedBlock.empty();
+    var shiftSpaces = [0, 1, 2, 3];
+    for (var row = 0; row < 4; row++) {
+      for (var col = 0; col < 4; col++) {
+        var newColumn = this.getNewColumnNumber(col, shiftSpaces[row]);
+        shiftedBlock.data[newColumn].bytes[row] = blk.data[col].bytes[row];
+      }
+    }
+
+    blk = shiftedBlock;
+  }
+
+  int getNewColumnNumber(int column, int spacesShifted) {
+    var newColumn = column - spacesShifted;
+    if (newColumn < 0) {
+      return newColumn + 4;
+    } else {
+      return newColumn;
+    }
+  }
 
   void mixColumns(EncryptedBlock blk) {}
 }
@@ -147,6 +168,21 @@ class EncryptedBlock {
       var start = i * 4;
       var end = start + 4;
       this.data.add(new Word.fromByteArray(data.sublist(start, end)));
+    }
+  }
+
+  EncryptedBlock.empty() {
+    this.data = new List.generate(4, (x) => new Word());
+  }
+
+  void printBlock() {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        var value = this.data[j].bytes[i].toRadixString(16) + " ";
+        value = value.length < 3 ? "0" + value : value;
+        stdout.write(value);
+      }
+      print("");
     }
   }
 }
