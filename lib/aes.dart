@@ -18,7 +18,11 @@ class AesSymmetricKey {
   }
 
   String toString() {
-    return base64.encode(_keyBytes);
+    var result = "";
+    this._keyBytes.forEach((element) {
+      result += element.toRadixString(16);
+    });
+    return result;
   }
 }
 
@@ -153,14 +157,16 @@ class EncryptedMessage {
   }
 
   String toString() {
-    var result = <int>[];
+    var result = "";
     this.blocks.forEach((block) {
       block.data.forEach((word) {
-        result.addAll(word.bytes);
+        word.bytes.forEach((byte) {
+          result += byte.toRadixString(16);
+        });
       });
     });
 
-    return base64.encode(result);
+    return result;
   }
 }
 
