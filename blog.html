@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<head>
+<style>
+    .short-divider{
+        max-width: 500px;
+        min-width: 100px;
+        height: 1px;
+        border: solid 1px black;
+    }
+    p{
+        max-width: 700px;
+    }
+    li{
+        max-width: 700px;
+    }
+</style>
+</head>
+
+<body>
+    <div id = "post-content">
+        <h2>My Adventures with AES</h2>
+        <div class = "short-divider"></div>
+        <h5>My experiences writing a ground-up implementation of the Advanced Encryption Standard in Dart.</h5>
+        <p>
+            The AES is a commonly used encryption standard which was adopted by the United States Government following a NIST competition.
+            Its predecessor, DES or the Digital Encryption Standard, had been shown to be vulnerable to several types of attacks and a complete
+            crack of the DES cipher was considered imminent. The cipher which won the NIST competition to become the AES was the Rijndael cipher.
+            Designed by two Belgian cryptographers, Vincent Rijmen and Joan Daemen, the Rijndael cipher won out over fifteen serious competitors
+            which also met the NIST requirements for entry.  After being ratified by NIST it was accepted by the US Government in 2002 as a federal
+            standard.
+        </p>
+        <br>
+        <h3>A High-Level Overview</h3>
+        <p>
+            AES works by applying a repetitive process to a block of 128 bits of data. This process allows the data to be diffused sufficiently far
+            from its original state as well as encrypted multiple times using multiple keys (referred to as round keys in the cipher). Typically the
+            process starts by obtaining 128, 192 or 256 bits of secure random data from an SPRNG which are used as the private key of the encryption.
+            The key is then subjected to a process known as key expansion where the original key is used to generate 10, 12 or 14 round keys depending
+            on the length of the private key.  Once these keys are derived the actual encryption begins.
+        </p>
+        <p>
+            First the private key is applied to the current block (I will go over what "applied" entails later), this comprises the complete first
+            round of encryption.  Next the block undergoes three processes to diffuse the data, 1) Substitute bytes, 2) Shift rows, 3) Mix columns;
+            after these three processes complete the next round key is applied and the cycle begins again. This cycle occurs a total of 9, 11 or 13
+            times depending on the key size in question. Finally, for the last round, the substitute bytes and shift rows steps occur before the final
+            round key is applied.  Note that the mix columns step is omitted in the final round.  AES processes blocks of 128 bytes at a time so once
+            the first block is encrypted subsequent block are encrypted the same way.  If the total number of bits to be encrypted cannot be broken
+            evenly into 128 bit blocks the last block is padded with zeros.
+        </p>
+        <br>
+        <h3>A Few Notes</h3>
+        <ol>
+            <li>
+                I am not a cryptographer, the following information is my understanding of the AES and may be incorrect. I suggest that you check this
+                information against other sources if you are trying to learn about AES beyond simple curiosity.
+            </li>
+            <li>
+                This post contains my code implementing AES, the code can also be found <a href = "https://github.com/ixonstater/learning_aes">here</a>
+                on my github page. This code should NOT be used ANYWHERE unless you are trying to learn about AES. While the AES has never been cracked
+                untested implementations can often be vulnerable to fascinating group of exploits known as side-channel attacks.
+            </li>
+            <li>
+                My implementation of AES does not use secure cipher modes, instead it uses the "default" AES encryption mode ECB or Electronic Code Book.
+                I will not cover different cipher modes in depth here as the do not affect the base AES algorithm, but you should note that using an
+                insecure cipher mode can also lea
+            </li>
+        </ol>
+    </div>
+</body>
