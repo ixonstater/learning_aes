@@ -68,6 +68,23 @@
         <br>
         <h3>Fundamental Mathematics in the AES</h3>
         <h4>Galois Fields</h4>
+        <p class = "text-column">
+            Probably the single most important set of operations in AES encryption are those involving Galois Fields. Evariste Galois, pronounced Galwaa,
+            was a brilliant French mathematician who died very young after being wounded in a duel. His work in finite fields is crucial to the Rijndael
+            cipher and AES. A finite field (also known as a Galois field) is a field that contains a finite (limited / constrained) number of elements. Essentially it is a series of
+            numbers starting at x and ending at x + i where i is the length of the field. The finite field is maintained by defining numeric operations eg.
+            addition and multiplication such that any operation applied to members of the field will produce another number in the field. For example in
+            Gf(5) (denoting the field {0, 1, 2, 3, 4, 5}), 1 + 2 = 3, but 4 + 2 = 0. This type of operation should be familiar to anyone with experience
+            using the modulus operator. Indeed, for any prime limit eg Gf(3), Gf(19), Gf(13), addition and multiplication can be defined as c = (a + b) % i
+            or c = (a * b) % i where i is the limit of the Galois field.
+        </p>
+        <p class = "text-column">
+            Addition and multiplication in prime Galois fields are simple enough, but what about Gf(6) or Gf(8)? As it turns out one of these will work but
+            the other will not; not just any number can be chosen as the limit of a finite field without breaking the constraints on arithmetic operations. 
+            The number chosen must be either a prime, or a prime power.  A prime power is a number of the form p^k where k is an arbitrary exponent and p
+            is an arbitrary prime number. If these constraints are followed a finite / Galois field can be constructed, albeit with different rules involving
+            multiplication and addition.
+        </p>
         <h4>Bitwise Xor</h4>
         <h4>Affine Transform</h4>
         <h3>Sbox Generation</h3>
