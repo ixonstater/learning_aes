@@ -1,10 +1,7 @@
 import 'lib/aes.dart';
 
 void main(List<String> args) {
-  String msg = "";
-  for (var i = 0; i < 100000; i++) {
-    msg += "A";
-  }
+  String msg = "hello";
   var key = new AesSymmetricKey();
   var encryptor = new AesEncrypt(key);
 
