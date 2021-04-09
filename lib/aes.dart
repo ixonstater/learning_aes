@@ -322,7 +322,7 @@ class Sbox {
     for (var i = 0; i < this._fieldLimit; i++) {
       _logTable[product] = i;
       _antiLogTable[i] = product;
-      product = this.galoisMultiplication(_generator, _antiLogTable[i]);
+      product = this.galoisMultiplication(_generator, product);
     }
   }
 
