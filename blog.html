@@ -73,12 +73,13 @@
         </ol>
         <br>
         <h3>Fundamental Mathematics in the AES</h3>
+        <h4>Bitwise Xor</h4>
         <h4>Galois Fields</h4>
         <p class = "text-column">
             Probably the single most important set of operations in AES encryption are those involving Galois Fields. Evariste Galois, pronounced Galwaa,
             was a brilliant French mathematician who died very young after being wounded in a duel. His work in finite fields is crucial to the Rijndael
             cipher and AES. A finite field (also known as a Galois field) is a field that contains a finite (limited / constrained) number of elements. Essentially it is a series of
-            numbers starting at x and ending at x + i where i is the length of the field. The finite field is maintained by defining numeric operations eg.
+            integers starting at x and ending at x + i where i is the length of the field. The finite field is maintained by defining numeric operations eg.
             addition and multiplication such that any operation applied to members of the field will produce another number in the field. For example in
             Gf(5) (denoting the field {0, 1, 2, 3, 4}), 1 + 2 = 3, but 4 + 1 = 0. This type of operation should be familiar to anyone with experience
             using the modulus operator. Indeed, for any prime limit eg Gf(3), Gf(19), Gf(13), addition and multiplication can be defined as c = (a + b) % i
@@ -96,19 +97,29 @@
             that Gf(2) = {0, 1}, so the possible coefficients in our polynomial are either 0 or 1. This lets us represent any number in any Galois field
             Gf(p^k) as a polynomial where the coefficient is the binary digit occupying that space.  For example 41 = 00101001 = 0x^7 + 0x^6 + 1x^5 + 0x^4
             + 1x^3 + 0x^2 + 0x^1 + 1x^0 = x^5 + x^3 + 1. This representation may seem convoluted, but it is necessary to preform addition and multiplication
-            in a Galois field.
+            in a prime power Galois field. Galois operations can be done with any prime base, however base 2 is most popular in computer applications because
+            of the numbers binary nature.
         </p>
         <p class = "text-column">
-            Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(2). For example 41 + 10 = (x^5 + x^3 + 1) + (x^3 + x) =
-            x^5 + x + 1.  Remember, we are adding in Gf(2) so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is more easily understood in
+            Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(p). For example 
+            <br>41 + 10 in Gf(2)
+            <br>= (x^5 + x^3 + 1) + (x^3 + x) 
+            <br>= x^5 + x + 1.
+            <br>Remember, we are adding in Gf(2) so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is more easily understood in
             its binary representation 1010 + 101001 where addition is actually a bitwise Xor operation.
         </p>
         <p class = "text-column">
-            Multiplication is more complex than addition and is done via multiplication followed by modular division via some irreducible polynomial which
-            was used define the finite field.  Sounds hard right? It's not too bad if taken one step at a time with an example, so, for example: 12 * 7.
-            12 = x^3 + x^2, 7 = x^2 + x + 1, p = (12 * 7), p = (x^3 + x^2) * (x^2 + x + 1), p = (x^5 + x^4 + x^3) + (x^4 + x^3 + x^2). So far we have just
-            done simple polynomial multiplication; in the next step, consolidating the terms, addition is done like described above, in Gf(2). Therefore
-            our polynomial product p = x^5 + x^2 = 36. Since this does not exceed the limit of our our field, 256, the final step of reducing modulo some
+            Multiplication is more complex than addition and is done by standard polynomial multiplication followed by modular division via some irreducible polynomial which
+            was used define the finite field.  Sounds hard right? It's not too bad if taken one step at a time with an example, so, for example: 12 * 7 in Gf(2^8).
+            <br>12 = x^3 + x^2 (see description of number representation as polynomials in Galois fields above)
+            <br>7 = x^2 + x + 1
+            <br>p = (12 * 7)
+            <br>p = (x^3 + x^2) * (x^2 + x + 1)
+            <br>p = (x^5 + x^4 + x^3) + (x^4 + x^3 + x^2).
+            <br>So far we have just done simple polynomial multiplication; in the next step, consolidating the terms, addition is done like described above, in Gf(2). Therefore
+            our polynomial product 
+            <br>p = x^5 + x^2 = 36.
+            <br>Since this does not exceed the limit of our our field, 256, the final step of reducing modulo some
             irreducible polynomial is not necessary and our final product is 36. It is worth noting that with the reducing polynomial for AES, applying the
             modulus operation would still result in 36 being the final answer. If you want to see an example involving modulo reduction please look
             <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">here</a>.
@@ -140,7 +151,6 @@ int galoisMultiplication(int a, int b) {
     return p % this._fieldLimit;
 }
         </pre>
-        <h4>Bitwise Xor</h4>
         <h4>Affine Transform</h4>
         <h3>Sbox Generation</h3>
         <h3>Key Expansion</h3>
