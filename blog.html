@@ -11,7 +11,7 @@
         max-width: 700px;
     }
     .code-block{
-        background-color: bisque;
+        background-color: #ccc;
         max-width: 700px;
         padding: 20px;
         border: black solid 2px;
@@ -62,8 +62,8 @@
             </li>
             <li class = "text-column">
                 This post contains my code implementing AES, the code can also be found <a href = "https://github.com/ixonstater/learning_aes">here</a>
-                on my github page. This code should NOT be used ANYWHERE unless you are trying to learn about AES. While the AES has never been cracked
-                untested implementations can often be vulnerable to fascinating group of exploits known as side-channel attacks.
+                on my github page. This code should NOT be used ANYWHERE unless you are trying to learn about AES. While the AES has never been cracked,
+                untested implementations are often vulnerable to a group of exploits known as side-channel attacks.
             </li>
             <li class = "text-column">
                 My implementation of AES does not use a secure cipher mode, instead it uses the "default" AES encryption mode ECB or Electronic Code Book.
@@ -74,6 +74,26 @@
         <br>
         <h3>Fundamental Mathematics in the AES</h3>
         <h4>Bitwise Xor</h4>
+        <p class = "text-column">
+            Xor is the logic gate that AES uses to apply round keys to pieces of data. Xor works well for this because each possible output is distributed
+            evenly among the possible inputs. That is, an output of 1 and an output of 0 both have two distinct inputs that can produce them. If an and gate
+            or a normal or gate were used an output of 0 or 1 depending on which was used could be translated directly to the given inputs. An Xor truth
+            table looks like this:
+        </p>
+        <pre class = "code-block">
+A_______B___|___C
+0       0   |   0
+0       1   |   1
+1       0   |   1
+1       1   |   0
+        </pre>
+        <p class = "text-column">
+            A bitwise Xor works by applying the Xor operator across each bit in two corresponding bit sets. For example, 010101 and 110011
+            <br>010101
+            <br>110011
+            <br>______
+            <br>100110
+        </p>
         <h4>Galois Fields</h4>
         <p class = "text-column">
             Probably the single most important set of operations in AES encryption are those involving Galois Fields. Evariste Galois, pronounced Galwaa,
@@ -102,11 +122,13 @@
         </p>
         <p class = "text-column">
             Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(p). For example 
-            <br>41 + 10 in Gf(2)
-            <br>= (x^5 + x^3 + 1) + (x^3 + x) 
+            <br>41 + 10 in Gf(256)
+            <br>= (x^5 + x^3 + 1) + (x^3 + x)
             <br>= x^5 + x + 1.
-            <br>Remember, we are adding in Gf(2) so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is more easily understood in
-            its binary representation 1010 + 101001 where addition is actually a bitwise Xor operation.
+            <br>Remember, we are adding in Gf(2) which is the prime base of 256 so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is 
+            more easily understood in its binary representation 1010 + 101001 where addition is actually a bitwise Xor operation. The Xor trick only works
+            for Galois fields of base 2 or having a characteristic of 2. Lucky for us AES uses Galois(256) for its operations so the Xor trick is
+            applicable.
         </p>
         <p class = "text-column">
             Multiplication is more complex than addition and is done by standard polynomial multiplication followed by modular division via some irreducible polynomial which
