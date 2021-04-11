@@ -327,6 +327,8 @@ class Sbox {
   }
 
   void _fillSboxWithMultiplicativeInverse() {
+    // We skip i = 0 here because 0 is a special case.
+    // We define the multiplicative inverse of zero to be zero.
     for (var i = 1; i < this._fieldLimit; i++) {
       this._sBox[i] = this._antiLogTable[255 - this._logTable[i]];
     }

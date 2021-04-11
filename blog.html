@@ -49,9 +49,9 @@
             round of encryption.  Next the block undergoes three processes to diffuse the data, 1) Substitute bytes, 2) Shift rows, 3) Mix columns;
             after these three processes complete the next round key is applied and the cycle begins again. This cycle occurs a total of 9, 11 or 13
             times depending on the key size. Finally, for the last round, the substitute bytes and shift rows steps occur before the final
-            round key is applied.  Note that the mix columns step is omitted in the final round.  AES processes blocks of 128 bytes at a time so once
-            the first block is encrypted subsequent block are encrypted the same way.  If the total number of bits to be encrypted cannot be broken
-            evenly into 128 bit blocks the last block is padded with zeros.
+            round key is applied.  Note that the mix columns step is omitted in the final round.  Once the first block of 128 bits is encrypted subsequent
+            blocks are encrypted the same way.  If the total number of bits to be encrypted cannot be broken evenly into 128 bit blocks the last block is 
+            padded with zeros.
         </p>
         <br>
         <h3>A Few Notes</h3>
@@ -103,7 +103,7 @@ A_______B___|___C
             addition and multiplication such that any operation applied to members of the field will produce another number in the field. For example in
             Gf(5) (denoting the field {0, 1, 2, 3, 4}), 1 + 2 = 3, but 4 + 1 = 0. This type of operation should be familiar to anyone with experience
             using the modulus operator. Indeed, for any prime limit eg Gf(3), Gf(19), Gf(13), addition and multiplication can be defined as c = (a + b) % i
-            or c = (a * b) % i where i is the limit of the Galois field.
+            and c = (a * b) % i where i is the limit of the Galois field.
         </p>
         <p class = "text-column">
             Addition and multiplication in prime Galois fields are simple enough, but what about Gf(6) or Gf(8)? As it turns out one of these will work but
@@ -148,7 +148,7 @@ A_______B___|___C
         </p>
         <p class = "text-column">
             For practical application in AES multiplication is usually done via lookup in a table of values rather than via a computational process (unless
-            the implementation is built in a context with very low memory availability). This method requires 512 bytes of total memory space. In addition,
+            the implementation is built in a context with very low memory availability). This method requires 256 bytes of total memory space. In addition,
             Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version of the 
             <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">Peasant's Algorithm</a>. Included here is a dart function which implements that
             algorithm.
@@ -173,8 +173,76 @@ int galoisMultiplication(int a, int b) {
     return p % this._fieldLimit;
 }
         </pre>
-        <h4>Affine Transform</h4>
         <h3>Sbox Generation</h3>
+        <p class = "text-column">
+            A key piece of Rijndael ciphers is the byte substitution box. At each encryption step, excluding the first round, and during key expansion the
+            byte substitution box, or Sbox, is used to exchange one byte (eight bits) for another. The Rijndael algorithm does not use a dynamically generated
+            Sbox, but rather has a well defined method for generating the same Sbox each time. The Sbox is arranged so that a particular byte can be located
+            with its 4 most significant bits (largest bits) determining the column and its 4 least significant bits determining the row. The procedure for 
+            generating the Sbox can be broken into two distinct steps, first each number from 0 - 255 has its multiplicative inverse calculated in Gf(2^8),
+            second each of the multiplicative inverses has an operation known as the Affine Transform applied to it. Lets go over this in depth with some
+            examples.
+        </p>
+        <p class = "text-column">
+            Previously I mentioned that multiplication in a Galois field is typically done via lookup tables rather than a multiplication function. That method
+            is especially applicable to inverse multiplication in finite fields. Calculating the multiplicative inverse of a number in a finite field requires
+            access to log and anti-log (exponent) tables in the same finite field. Once these tables are constructed the multiplicative inverse can be found
+            using the formula anti-log(255 - log(x)). This formula works for all numbers excepting zero which must be handled as a special case; for AES 
+            purposes the inverse of zero is assumed to be zero even though this breaks ordinary mathematic rules.
+        </p>
+        <p class = "text-column">
+            Calculating log and anti-log tables for taking the multiplicative inverse of a number requires the use of exponentiation in a finite field. It
+            turns out that certain numbers in the range 0 - i where i is the Galois field limit will generate all possible numbers in the field if repeatedly 
+            exponentiated using Galois multiplication. Those numbers are referred to as field generators and work like this,
+            <br>g = the generator number
+            <br>g*1 = a
+            <br>g*a = b
+            <br>g*b = c
+            <br>g*d = e
+            <br>Eventually if the above process is repeated i times all possible numbers in the set will have been visited. By storing these numbers as they
+            are generated in a loop we can produce a lookup table which will tell us the result of some exponent or logarithm of x. Below is some dart code
+            demonstrating the process of generating these tables.
+        </p>
+        <pre class = "code-block">
+void _populateLogAndAntilog() {
+    int product = 1;
+
+    for (var i = 0; i < this._fieldLimit; i++) {
+        _logTable[product] = i;
+        _antiLogTable[i] = product;
+        product = this.galoisMultiplication(_generator, product);
+    }
+}
+
+void _fillSboxWithMultiplicativeInverse() {
+    // We skip i = 0 here because 0 is a special case.
+    // We define the multiplicative inverse of zero to be zero.
+    for (var i = 1; i < this._fieldLimit; i++) {
+        this._sBox[i] = this._antiLogTable[255 - this._logTable[i]];
+    }
+}
+        </pre>
+        <p class = "text-column">
+            The following is a list of all numbers which can be used as generators for the Gf(256) finite field:
+        </p>
+        <pre class = "code-block">
+3 5 6 9 11 14 17 18 19 20 23 24 25 
+26 28 30 31 33 34 35 39 40 42 44 48 
+49 60 62 63 65 69 70 71 72 73 75 76 
+78 79 82 84 86 87 88 89 90 91 95 
+100 101 104 105 109 110 112 113 118 
+119 121 122 123 126 129 132 134 135 
+136 138 142 143 144 147 149 150 152 
+153 155 157 160 164 165 166 167 169 
+170 172 173 178 180 183 184 185 186 
+190 191 192 193 196 200 201 206 207 
+208 214 215 218 220 221 222 226 227 
+229 230 231 233 234 235 238 240 241 
+244 245 246 248 251 253 254 255
+        </pre>
+        <p class = "text-column">
+            After filling the Sbox with multiplicative inverses in Gf(256) the next step is to compute the Affine transform for each value. 
+        </p>
         <h3>Key Expansion</h3>
         <h3>Add Round Key</h3>
         <h3>Substitute Bytes</h3>
