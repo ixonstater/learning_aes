@@ -300,7 +300,7 @@ class Sbox {
   // Anti-log is exponentiation table
   late List<int> _antiLogTable;
   late List<int> _sBox;
-  final int _generator = 0xe5;
+  final int _generator = 3;
   final int _fieldLimit = 256;
 
   Sbox() {
@@ -312,7 +312,9 @@ class Sbox {
 
   void _initialize() {
     this._populateLogAndAntilog();
+    this.printLogAndAntiLog();
     this._fillSboxWithMultiplicativeInverse();
+    this.printSbox();
     this._applyAffineTransformToSbox();
   }
 
@@ -345,6 +347,8 @@ class Sbox {
       }
 
       x ^= 0x63;
+
+      // Convert back to unsigned 8 bit int
       _sBox[i] = x % _fieldLimit;
     }
   }
@@ -372,5 +376,40 @@ class Sbox {
     for (var i = 0; i < 4; i++) {
       word.bytes[i] = this._sBox[word.bytes[i]];
     }
+  }
+
+  void printSbox() {
+    for (var i = 0; i < 16; i++) {
+      for (var j = 0; j < 16; j++) {
+        var val = this._sBox[i * 16 + j].toRadixString(16) + " ";
+        val = val.length == 3 ? val : "0" + val;
+        stdout.write(val);
+      }
+      print("");
+    }
+  }
+
+  void printLogAndAntiLog() {
+    for (var i = 0; i < 16; i++) {
+      for (var j = 0; j < 16; j++) {
+        var val = this._logTable[i * 16 + j].toRadixString(16) + " ";
+        val = val.length == 3 ? val : "0" + val;
+        stdout.write(val);
+      }
+      print("");
+    }
+
+    print("");
+
+    for (var i = 0; i < 16; i++) {
+      for (var j = 0; j < 16; j++) {
+        var val = this._antiLogTable[i * 16 + j].toRadixString(16) + " ";
+        val = val.length == 3 ? val : "0" + val;
+        stdout.write(val);
+      }
+      print("");
+    }
+
+    print("");
   }
 }
