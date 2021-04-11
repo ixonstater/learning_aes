@@ -370,6 +370,60 @@ e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df
 8c a1 89 0d bf e6 42 68 41 99 2d 0f b0 54 bb 16
         </pre>
         <h3>Key Expansion</h3>
+        <p class = "text-column">
+            We've managed to make it quite far into an encryption algorithm without discussing the key details at all, so lets start with some definitions.
+            Keys in AES can be 128, 192 or 256 bits. For simplicities sake I will only discuss the expansion of a 128 bit key, if you wish to learn about the
+            differences in each key expansion I suggest looking <a href = "https://www.samiam.org/key-schedule.html">here</a>. AES / Rijndael keys are composed
+            of "words". Each word is 4 bytes or 16 bits of data; since Rijndael operates on bytes instead of bits we will define a word as 4 bytes. It follows
+            that a 128 bit key is composed of 16 bytes, or, by our previous definition, 4 words. The key expansion must produce a total of 11 keys including the
+            original randomly generated key. Each round of key expansion creates a new key from the key created in the previous round.
+        </p>
+        <p class = "text-column">
+            The algorithm for generating each word in a new round key is very simple for words 2, 3 and 4; it requires that the corresponding word from the
+            previous round be Xor'ed with the last word created to produce the next word. For example if we are creating word 2 of the second round key it
+            would be equal to word 1 of the second round key Xor'ed with word 2 of the first round key. This pattern holds true for words 3 and 4 of the round
+            key as well.
+        </p>
+        <p class = "text-column">
+            Word 1 of each key is more complicated, it still uses the last word created and its corresponding word from the previous round, but before the
+            Xor operation is applied an additional function is applied to the last word created. This operation is referred to as the schedule_core function
+            or as the rcon function (rcon stands for round constant). This function has three steps, first circularly rotate the word one byte to the left,
+            second apply the Sbox to all four bytes (substitute each byte in the box for its corresponding Sbox byte), third Xor the word with the round
+            constant. The round constant is a word as well and it begins as {0x01, 0x0, 0x0, 0x0}; however, each time the round constant is used it is 
+            multiplied by 0x02 in Gf(256) after being applied to the word. Once the schedule_core function is run the produced word is then Xor'ed with the
+            first word of the previous round and the resulting word becomes the first word of the current round.
+        </p>
+        <p class = "text-column">
+            This key expansion routine was very confusing to me at first despite being relatively simple (in my opinion) compared to Galois field arithmetic.
+            To make things clearer lets do an example key expansion:
+        </p>
+        <pre class = "code-block">
+Original Key
+01 0d 0c 03
+af 78 92 1a
+4c e5 12 6a
+7c ac ef d2
+
+Round Constant
+{01, 00, 00, 00}
+
+Key 1 Word 1
+Four Words Ago = 01 0d 0c 03
+Previous Word = 7c ac ef d2
+Left Shift Previous Word = ac ef d2 7c
+Apply Sbox to Word = 91 df b5 10
+Xor Word With Rcon = 90 df b5 10
+Xor Word With Four Words Ago = 91 d2 b9 13
+Result: 91 d2 b9 13
+
+Round Constant
+{02, 00, 00, 00}
+
+Key 1 Word 2
+Four Words Ago = af 78 92 1a
+Previous Word = 91 d2 b9 13
+Xor Words = 3e aa 2b 09
+        </pre>
         <h3>Add Round Key</h3>
         <h3>Substitute Bytes</h3>
         <h3>Shift Rows</h3>
