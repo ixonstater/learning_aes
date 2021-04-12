@@ -439,10 +439,10 @@ Xor Words = af d5 1c ab
         </p>
         <pre class = "code-block">
 Block To Encrypt
-6e 65 76 72
-67 6f 6e 6e
-61 67 69 76
-65 75 75 70
+6e 67 61 65
+65 6f 67 75
+76 6e 69 75
+72 6e 76 70
         </pre>
         <p class = "text-column">
             Applying a round key to a block of data is probably the simplest operation that AES performs during the encryption rounds. It consists entirely
@@ -450,10 +450,10 @@ Block To Encrypt
         </p>
         <pre class = "code-block">
 Block To Encrypt
-6e 65 76 72
-67 6f 6e 6e
-61 67 69 76
-65 75 75 70
+6e 67 61 65
+65 6f 67 75
+76 6e 69 75
+72 6e 76 70
 
 First Round Encryption Key
 01 0d 0c 03
@@ -467,12 +467,20 @@ _____________
 6f = 01101111
 
 65 = 01100101
-0d = 00001101
+af = 10101111
 _____________
-68 = 01101000
+ca = 11001010
+
+76 = 01110110
+4c = 01001100
+_____________
+3a = 00111010
 
 Block After Complete First Round
-
+6f 6a 6d 66 
+ca 17 f5 6f 
+3a 8b 7b 1f 
+0e c2 99 a2
         </pre>
         <h3>Substitute Bytes</h3>
         <h3>Shift Rows</h3>
