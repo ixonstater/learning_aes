@@ -482,6 +482,13 @@ ca 17 f5 6f
 3a 8b 7b 1f 
 0e c2 99 a2
         </pre>
+        <p class = "text-column">
+            Its easy to see how this process works with 128 bits of data and 128 bits of key, but what about the 192 and 256 bit keys that AES also supports?
+            The block size for data is fixed at 128, so how can a 192 bit key be applied to 128 bits of data? The answer is that once the 192 or 256 bit key 
+            is expanded, producing 192 or 256 additional key bits for each round of expansion, the full bit sequence is split into 128 bit chunks which are 
+            applied to the data one by one. So even though a 192 bit key is expanded to 12 "keys", the full bit sequence is enough for 18 total round keys.
+            The same goes for a 256 bit key which is expanded to 14 "keys" for a total of 28 rounds of key application. 
+        </p>
         <h3>Substitute Bytes</h3>
         <h3>Shift Rows</h3>
         <h3>Mix Columns</h3>
