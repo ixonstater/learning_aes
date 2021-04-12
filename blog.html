@@ -50,7 +50,7 @@
             after these three processes complete the next round key is applied and the cycle begins again. This cycle occurs a total of 9, 11 or 13
             times depending on the key size. Finally, for the last round, the substitute bytes and shift rows steps occur before the final
             round key is applied.  Note that the mix columns step is omitted in the final round.  Once the first block of 128 bits is encrypted subsequent
-            blocks are encrypted the same way.  If the total number of bits to be encrypted cannot be broken evenly into 128 bit blocks the last block is 
+            blocks are encrypted the same way.  If the total number of bits to be encrypted cannot be broken evenly into 128 bit blocks the last block is
             padded with zeros.
         </p>
         <br>
@@ -107,7 +107,7 @@ A_______B___|___C
         </p>
         <p class = "text-column">
             Addition and multiplication in prime Galois fields are simple enough, but what about Gf(6) or Gf(8)? As it turns out one of these will work but
-            the other will not; not just any number can be chosen as the limit of a finite field without breaking the constraints on arithmetic operations. 
+            the other will not; not just any number can be chosen as the limit of a finite field without breaking the constraints on arithmetic operations.
             The number chosen must be either a prime, or a prime power.  A prime power is a number of the form p^k where k is an arbitrary exponent and p
             is an arbitrary prime number. If these constraints are followed a finite / Galois field can be constructed, albeit with different rules involving
             multiplication and addition.
@@ -121,11 +121,11 @@ A_______B___|___C
             of the numbers binary nature.
         </p>
         <p class = "text-column">
-            Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(p). For example 
+            Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(p). For example
             <br>41 + 10 in Gf(256)
             <br>= (x^5 + x^3 + 1) + (x^3 + x)
             <br>= x^5 + x + 1.
-            <br>Remember, we are adding in Gf(2) which is the prime base of 256 so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is 
+            <br>Remember, we are adding in Gf(2) which is the prime base of 256 so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is
             more easily understood in its binary representation 1010 + 101001 where addition is actually a bitwise Xor operation. The Xor trick only works
             for Galois fields of base 2 or having a characteristic of 2. Lucky for us AES uses Galois(256) for its operations so the Xor trick is
             applicable.
@@ -139,7 +139,7 @@ A_______B___|___C
             <br>p = (x^3 + x^2) * (x^2 + x + 1)
             <br>p = (x^5 + x^4 + x^3) + (x^4 + x^3 + x^2).
             <br>So far we have just done simple polynomial multiplication; in the next step, consolidating the terms, addition is done like described above, in Gf(2). Therefore
-            our polynomial product 
+            our polynomial product
             <br>p = x^5 + x^2 = 36.
             <br>Since this does not exceed the limit of our our field, 256, the final step of reducing modulo some
             irreducible polynomial is not necessary and our final product is 36. It is worth noting that with the reducing polynomial for AES, applying the
@@ -149,7 +149,7 @@ A_______B___|___C
         <p class = "text-column">
             For practical application in AES multiplication is usually done via lookup in a table of values rather than via a computational process (unless
             the implementation is built in a context with very low memory availability). This method requires 256 bytes of total memory space. In addition,
-            Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version of the 
+            Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version of the
             <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">Peasant's Algorithm</a>. Included here is a dart function which implements that
             algorithm.
         </p>
@@ -178,7 +178,7 @@ int galoisMultiplication(int a, int b) {
             A key piece of Rijndael ciphers is the byte substitution box. At each encryption step, excluding the first round, and during key expansion the
             byte substitution box, or Sbox, is used to exchange one byte (eight bits) for another. The Rijndael algorithm does not use a dynamically generated
             Sbox, but rather has a well defined method for generating the same Sbox each time. The Sbox is arranged so that a particular byte can be located
-            with its 4 most significant bits (largest bits) determining the column and its 4 least significant bits determining the row. The procedure for 
+            with its 4 most significant bits (largest bits) determining the column and its 4 least significant bits determining the row. The procedure for
             generating the Sbox can be broken into two distinct steps, first each number from 0 - 255 has its multiplicative inverse calculated in Gf(2^8),
             second each of the multiplicative inverses has an operation known as the Affine Transform applied to it. Lets go over this in depth with some
             examples.
@@ -187,12 +187,12 @@ int galoisMultiplication(int a, int b) {
             Previously I mentioned that multiplication in a Galois field is typically done via lookup tables rather than a multiplication function. That method
             is especially applicable to inverse multiplication in finite fields. Calculating the multiplicative inverse of a number in a finite field requires
             access to log and anti-log (exponent) tables in the same finite field. Once these tables are constructed the multiplicative inverse can be found
-            using the formula anti-log(255 - log(x)). This formula works for all numbers excepting zero which must be handled as a special case; for AES 
+            using the formula anti-log(255 - log(x)). This formula works for all numbers excepting zero which must be handled as a special case; for AES
             purposes the inverse of zero is assumed to be zero even though this breaks ordinary mathematic rules.
         </p>
         <p class = "text-column">
             Calculating log and anti-log tables for taking the multiplicative inverse of a number requires the use of exponentiation in a finite field. It
-            turns out that certain numbers in the range 0 - i where i is the Galois field limit will generate all possible numbers in the field if repeatedly 
+            turns out that certain numbers in the range 0 - i where i is the Galois field limit will generate all possible numbers in the field if repeatedly
             exponentiated using Galois multiplication. Those numbers are referred to as field generators and work like this,
             <br>g = the generator number
             <br>g*1 = a
@@ -226,18 +226,18 @@ void _fillSboxWithMultiplicativeInverse() {
             The following is a list of all numbers which can be used as generators for the Gf(256) finite field:
         </p>
         <pre class = "code-block">
-3 5 6 9 11 14 17 18 19 20 23 24 25 
-26 28 30 31 33 34 35 39 40 42 44 48 
-49 60 62 63 65 69 70 71 72 73 75 76 
-78 79 82 84 86 87 88 89 90 91 95 
-100 101 104 105 109 110 112 113 118 
-119 121 122 123 126 129 132 134 135 
-136 138 142 143 144 147 149 150 152 
-153 155 157 160 164 165 166 167 169 
-170 172 173 178 180 183 184 185 186 
-190 191 192 193 196 200 201 206 207 
-208 214 215 218 220 221 222 226 227 
-229 230 231 233 234 235 238 240 241 
+3 5 6 9 11 14 17 18 19 20 23 24 25
+26 28 30 31 33 34 35 39 40 42 44 48
+49 60 62 63 65 69 70 71 72 73 75 76
+78 79 82 84 86 87 88 89 90 91 95
+100 101 104 105 109 110 112 113 118
+119 121 122 123 126 129 132 134 135
+136 138 142 143 144 147 149 150 152
+153 155 157 160 164 165 166 167 169
+170 172 173 178 180 183 184 185 186
+190 191 192 193 196 200 201 206 207
+208 214 215 218 220 221 222 226 227
+229 230 231 233 234 235 238 240 241
 244 245 246 248 251 253 254 255
         </pre>
         <p class = "text-column">
@@ -262,8 +262,8 @@ _______________
 01110111 = 77 (hexadecimal)
         </pre>
         <p class = "text-column">
-            So, in other words, with an input of 8d we should expect to get an output of 77. This process is repeated for each multiplicative inverse 
-            previously calculated and, when finished, produces the entire Rijndael Sbox. The following is a dart function which applies the Affine 
+            So, in other words, with an input of 8d we should expect to get an output of 77. This process is repeated for each multiplicative inverse
+            previously calculated and, when finished, produces the entire Rijndael Sbox. The following is a dart function which applies the Affine
             transform to each 8 bit multiplicative inverse in a loop.
         </p>
         <pre class = "code-block">
@@ -292,81 +292,81 @@ void _applyAffineTransformToSbox() {
         <pre class = "code-block">
 Anti-Log Table with Generator 0x03
 
-01 03 05 0f 11 33 55 ff 1a 2e 72 96 a1 f8 13 35 
-5f e1 38 48 d8 73 95 a4 f7 02 06 0a 1e 22 66 aa 
-e5 34 5c e4 37 59 eb 26 6a be d9 70 90 ab e6 31 
-53 f5 04 0c 14 3c 44 cc 4f d1 68 b8 d3 6e b2 cd 
-4c d4 67 a9 e0 3b 4d d7 62 a6 f1 08 18 28 78 88 
-83 9e b9 d0 6b bd dc 7f 81 98 b3 ce 49 db 76 9a 
-b5 c4 57 f9 10 30 50 f0 0b 1d 27 69 bb d6 61 a3 
-fe 19 2b 7d 87 92 ad ec 2f 71 93 ae e9 20 60 a0 
-fb 16 3a 4e d2 6d b7 c2 5d e7 32 56 fa 15 3f 41 
-c3 5e e2 3d 47 c9 40 c0 5b ed 2c 74 9c bf da 75 
-9f ba d5 64 ac ef 2a 7e 82 9d bc df 7a 8e 89 80 
-9b b6 c1 58 e8 23 65 af ea 25 6f b1 c8 43 c5 54 
-fc 1f 21 63 a5 f4 07 09 1b 2d 77 99 b0 cb 46 ca 
-45 cf 4a de 79 8b 86 91 a8 e3 3e 42 c6 51 f3 0e 
-12 36 5a ee 29 7b 8d 8c 8f 8a 85 94 a7 f2 0d 17 
+01 03 05 0f 11 33 55 ff 1a 2e 72 96 a1 f8 13 35
+5f e1 38 48 d8 73 95 a4 f7 02 06 0a 1e 22 66 aa
+e5 34 5c e4 37 59 eb 26 6a be d9 70 90 ab e6 31
+53 f5 04 0c 14 3c 44 cc 4f d1 68 b8 d3 6e b2 cd
+4c d4 67 a9 e0 3b 4d d7 62 a6 f1 08 18 28 78 88
+83 9e b9 d0 6b bd dc 7f 81 98 b3 ce 49 db 76 9a
+b5 c4 57 f9 10 30 50 f0 0b 1d 27 69 bb d6 61 a3
+fe 19 2b 7d 87 92 ad ec 2f 71 93 ae e9 20 60 a0
+fb 16 3a 4e d2 6d b7 c2 5d e7 32 56 fa 15 3f 41
+c3 5e e2 3d 47 c9 40 c0 5b ed 2c 74 9c bf da 75
+9f ba d5 64 ac ef 2a 7e 82 9d bc df 7a 8e 89 80
+9b b6 c1 58 e8 23 65 af ea 25 6f b1 c8 43 c5 54
+fc 1f 21 63 a5 f4 07 09 1b 2d 77 99 b0 cb 46 ca
+45 cf 4a de 79 8b 86 91 a8 e3 3e 42 c6 51 f3 0e
+12 36 5a ee 29 7b 8d 8c 8f 8a 85 94 a7 f2 0d 17
 39 4b dd 7c 84 97 a2 fd 1c 24 6c b4 c7 52 f6 01
         </pre>
         <pre class = "code-block">
 Log Table with Generator 0x03
 
-00 ff 19 01 32 02 1a c6 4b c7 1b 68 33 ee df 03 
-64 04 e0 0e 34 8d 81 ef 4c 71 08 c8 f8 69 1c c1 
-7d c2 1d b5 f9 b9 27 6a 4d e4 a6 72 9a c9 09 78 
-65 2f 8a 05 21 0f e1 24 12 f0 82 45 35 93 da 8e 
-96 8f db bd 36 d0 ce 94 13 5c d2 f1 40 46 83 38 
-66 dd fd 30 bf 06 8b 62 b3 25 e2 98 22 88 91 10 
-7e 6e 48 c3 a3 b6 1e 42 3a 6b 28 54 fa 85 3d ba 
-2b 79 0a 15 9b 9f 5e ca 4e d4 ac e5 f3 73 a7 57 
-af 58 a8 50 f4 ea d6 74 4f ae e9 d5 e7 e6 ad e8 
-2c d7 75 7a eb 16 0b f5 59 cb 5f b0 9c a9 51 a0 
-7f 0c f6 6f 17 c4 49 ec d8 43 1f 2d a4 76 7b b7 
-cc bb 3e 5a fb 60 b1 86 3b 52 a1 6c aa 55 29 9d 
-97 b2 87 90 61 be dc fc bc 95 cf cd 37 3f 5b d1 
-53 39 84 3c 41 a2 6d 47 14 2a 9e 5d 56 f2 d3 ab 
-44 11 92 d9 23 20 2e 89 b4 7c b8 26 77 99 e3 a5 
+00 ff 19 01 32 02 1a c6 4b c7 1b 68 33 ee df 03
+64 04 e0 0e 34 8d 81 ef 4c 71 08 c8 f8 69 1c c1
+7d c2 1d b5 f9 b9 27 6a 4d e4 a6 72 9a c9 09 78
+65 2f 8a 05 21 0f e1 24 12 f0 82 45 35 93 da 8e
+96 8f db bd 36 d0 ce 94 13 5c d2 f1 40 46 83 38
+66 dd fd 30 bf 06 8b 62 b3 25 e2 98 22 88 91 10
+7e 6e 48 c3 a3 b6 1e 42 3a 6b 28 54 fa 85 3d ba
+2b 79 0a 15 9b 9f 5e ca 4e d4 ac e5 f3 73 a7 57
+af 58 a8 50 f4 ea d6 74 4f ae e9 d5 e7 e6 ad e8
+2c d7 75 7a eb 16 0b f5 59 cb 5f b0 9c a9 51 a0
+7f 0c f6 6f 17 c4 49 ec d8 43 1f 2d a4 76 7b b7
+cc bb 3e 5a fb 60 b1 86 3b 52 a1 6c aa 55 29 9d
+97 b2 87 90 61 be dc fc bc 95 cf cd 37 3f 5b d1
+53 39 84 3c 41 a2 6d 47 14 2a 9e 5d 56 f2 d3 ab
+44 11 92 d9 23 20 2e 89 b4 7c b8 26 77 99 e3 a5
 67 4a ed de c5 31 fe 18 0d 63 8c 80 c0 f7 70 07
         </pre>
         <pre class = "code-block">
 Multiplicative Inverses in Gf(256)
 
-00 01 8d f6 cb 52 7b d1 e8 4f 29 c0 b0 e1 e5 c7 
-74 b4 aa 4b 99 2b 60 5f 58 3f fd cc ff 40 ee b2 
-3a 6e 5a f1 55 4d a8 c9 c1 0a 98 15 30 44 a2 c2 
-2c 45 92 6c f3 39 66 42 f2 35 20 6f 77 bb 59 19 
-1d fe 37 67 2d 31 f5 69 a7 64 ab 13 54 25 e9 09 
-ed 5c 05 ca 4c 24 87 bf 18 3e 22 f0 51 ec 61 17 
-16 5e af d3 49 a6 36 43 f4 47 91 df 33 93 21 3b 
-79 b7 97 85 10 b5 ba 3c b6 70 d0 06 a1 fa 81 82 
-83 7e 7f 80 96 73 be 56 9b 9e 95 d9 f7 02 b9 a4 
-de 6a 32 6d d8 8a 84 72 2a 14 9f 88 f9 dc 89 9a 
-fb 7c 2e c3 8f b8 65 48 26 c8 12 4a ce e7 d2 62 
-0c e0 1f ef 11 75 78 71 a5 8e 76 3d bd bc 86 57 
-0b 28 2f a3 da d4 e4 0f a9 27 53 04 1b fc ac e6 
-7a 07 ae 63 c5 db e2 ea 94 8b c4 d5 9d f8 90 6b 
-b1 0d d6 eb c6 0e cf ad 08 4e d7 e3 5d 50 1e b3 
+00 01 8d f6 cb 52 7b d1 e8 4f 29 c0 b0 e1 e5 c7
+74 b4 aa 4b 99 2b 60 5f 58 3f fd cc ff 40 ee b2
+3a 6e 5a f1 55 4d a8 c9 c1 0a 98 15 30 44 a2 c2
+2c 45 92 6c f3 39 66 42 f2 35 20 6f 77 bb 59 19
+1d fe 37 67 2d 31 f5 69 a7 64 ab 13 54 25 e9 09
+ed 5c 05 ca 4c 24 87 bf 18 3e 22 f0 51 ec 61 17
+16 5e af d3 49 a6 36 43 f4 47 91 df 33 93 21 3b
+79 b7 97 85 10 b5 ba 3c b6 70 d0 06 a1 fa 81 82
+83 7e 7f 80 96 73 be 56 9b 9e 95 d9 f7 02 b9 a4
+de 6a 32 6d d8 8a 84 72 2a 14 9f 88 f9 dc 89 9a
+fb 7c 2e c3 8f b8 65 48 26 c8 12 4a ce e7 d2 62
+0c e0 1f ef 11 75 78 71 a5 8e 76 3d bd bc 86 57
+0b 28 2f a3 da d4 e4 0f a9 27 53 04 1b fc ac e6
+7a 07 ae 63 c5 db e2 ea 94 8b c4 d5 9d f8 90 6b
+b1 0d d6 eb c6 0e cf ad 08 4e d7 e3 5d 50 1e b3
 5b 23 38 34 68 46 03 8c dd 9c 7d a0 cd 1a 41 1c
         </pre>
         <pre class = "code-block">
 Final Completed AES Sbox
 
-63 7c 77 7b f2 6b 6f c5 30 01 67 2b fe d7 ab 76 
-ca 82 c9 7d fa 59 47 f0 ad d4 a2 af 9c a4 72 c0 
-b7 fd 93 26 36 3f f7 cc 34 a5 e5 f1 71 d8 31 15 
-04 c7 23 c3 18 96 05 9a 07 12 80 e2 eb 27 b2 75 
-09 83 2c 1a 1b 6e 5a a0 52 3b d6 b3 29 e3 2f 84 
-53 d1 00 ed 20 fc b1 5b 6a cb be 39 4a 4c 58 cf 
-d0 ef aa fb 43 4d 33 85 45 f9 02 7f 50 3c 9f a8 
-51 a3 40 8f 92 9d 38 f5 bc b6 da 21 10 ff f3 d2 
-cd 0c 13 ec 5f 97 44 17 c4 a7 7e 3d 64 5d 19 73 
-60 81 4f dc 22 2a 90 88 46 ee b8 14 de 5e 0b db 
-e0 32 3a 0a 49 06 24 5c c2 d3 ac 62 91 95 e4 79 
-e7 c8 37 6d 8d d5 4e a9 6c 56 f4 ea 65 7a ae 08 
-ba 78 25 2e 1c a6 b4 c6 e8 dd 74 1f 4b bd 8b 8a 
-70 3e b5 66 48 03 f6 0e 61 35 57 b9 86 c1 1d 9e 
-e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df 
+63 7c 77 7b f2 6b 6f c5 30 01 67 2b fe d7 ab 76
+ca 82 c9 7d fa 59 47 f0 ad d4 a2 af 9c a4 72 c0
+b7 fd 93 26 36 3f f7 cc 34 a5 e5 f1 71 d8 31 15
+04 c7 23 c3 18 96 05 9a 07 12 80 e2 eb 27 b2 75
+09 83 2c 1a 1b 6e 5a a0 52 3b d6 b3 29 e3 2f 84
+53 d1 00 ed 20 fc b1 5b 6a cb be 39 4a 4c 58 cf
+d0 ef aa fb 43 4d 33 85 45 f9 02 7f 50 3c 9f a8
+51 a3 40 8f 92 9d 38 f5 bc b6 da 21 10 ff f3 d2
+cd 0c 13 ec 5f 97 44 17 c4 a7 7e 3d 64 5d 19 73
+60 81 4f dc 22 2a 90 88 46 ee b8 14 de 5e 0b db
+e0 32 3a 0a 49 06 24 5c c2 d3 ac 62 91 95 e4 79
+e7 c8 37 6d 8d d5 4e a9 6c 56 f4 ea 65 7a ae 08
+ba 78 25 2e 1c a6 b4 c6 e8 dd 74 1f 4b bd 8b 8a
+70 3e b5 66 48 03 f6 0e 61 35 57 b9 86 c1 1d 9e
+e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df
 8c a1 89 0d bf e6 42 68 41 99 2d 0f b0 54 bb 16
         </pre>
         <h3>Key Expansion</h3>
@@ -389,7 +389,7 @@ e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df
             Xor operation is applied an additional function is applied to the last word created. This operation is referred to as the schedule_core function
             or as the rcon function (rcon stands for round constant). This function has three steps, first circularly rotate the word one byte to the left,
             second apply the Sbox to all four bytes (substitute each byte in the box for its corresponding Sbox byte), third Xor the word with the round
-            constant. The round constant is a word as well and it begins as {0x01, 0x0, 0x0, 0x0}; however, each time the round constant is used it is 
+            constant. The round constant is a word as well and it begins as {0x01, 0x0, 0x0, 0x0}; however, each time the round constant is used it is
             multiplied by 0x02 in Gf(256) after being applied to the word. Once the schedule_core function is run the produced word is then Xor'ed with the
             first word of the previous round and the resulting word becomes the first word of the current round.
         </p>
@@ -424,7 +424,56 @@ Four Words Ago = af 78 92 1a
 Previous Word = 91 d2 b9 13
 Xor Words = 3e aa 2b 09
         </pre>
+        <p class = "text-column">
+            The above example demonstrates 1st and 2nd word generation in the Rijndael Key Schedule. For a full key expansion example please look
+            <a href = "example.html">here</a>.
+        </p>
         <h3>Add Round Key</h3>
+        <p class = "text-column">
+            We have discussed AES arithmetic, Sbox generation and key expansion; we now have all the tools necessary to dive into the AES encryption algorithm.
+            Before we start a few notes, first as in previous examples I will only be working with a 128 bit key though I will try to explain how 192 and 256
+            bit keys are applied as well for completeness. Second, the next four sections will be using a shared example with each section picking up where the
+            previous one left off. The key used for this example will be the same as the example key in the key expansion section. Finally, I will include in
+            a separate page a complete example containing a full key expansion and one full round of AES encryption over 128 bytes of data. The data we will be
+            encrypting is below:
+        </p>
+        <pre class = "code-block">
+Block To Encrypt
+6e 65 76 72
+67 6f 6e 6e
+61 67 69 76
+65 75 75 70
+        </pre>
+        <p class = "text-column">
+            Applying a round key to a block of data is probably the simplest operation that AES performs during the encryption rounds. It consists entirely
+            of Xoring the given data block with the current round key. For example with our first round key:
+        </p>
+        <pre class = "code-block">
+Block To Encrypt
+6e 65 76 72
+67 6f 6e 6e
+61 67 69 76
+65 75 75 70
+
+First Round Encryption Key
+01 0d 0c 03
+af 78 92 1a
+4c e5 12 6a
+7c ac ef d2
+
+6e = 01101110
+01 = 00000001
+_____________
+6f = 01101111
+
+65 = 01100101
+0d = 00001101
+_____________
+68 = 01101000
+
+Block After Complete First Round
+
+        </pre>
         <h3>Substitute Bytes</h3>
         <h3>Shift Rows</h3>
         <h3>Mix Columns</h3>

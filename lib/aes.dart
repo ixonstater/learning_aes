@@ -55,9 +55,36 @@ class AesEncrypt {
     this._key = new ExpandedKey(key, sbox);
   }
 
-  String encrypt(String msg) {
+  String blogExample() {
+    return this.encrypt(
+      "",
+      blogData: new EncryptedMessage(
+        this._key,
+        [
+          0x6e,
+          0x65,
+          0x76,
+          0x72,
+          0x67,
+          0x6f,
+          0x6e,
+          0x6e,
+          0x61,
+          0x67,
+          0x69,
+          0x76,
+          0x65,
+          0x75,
+          0x75,
+          0x70,
+        ],
+      ),
+    );
+  }
+
+  String encrypt(String msg, {EncryptedMessage? blogData = null}) {
     List<int> data = EncryptedMessage.convertStringToByteArray(msg);
-    var encryptedMsg = new EncryptedMessage(this._key, data);
+    var encryptedMsg = blogData ?? new EncryptedMessage(this._key, data);
 
     for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
       for (var roundNum = 0; roundNum < 11; roundNum++) {
@@ -207,7 +234,7 @@ class EncryptedBlock {
   void printBlock() {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        var value = this.data[j].bytes[i].toRadixString(16) + " ";
+        var value = this.data[i].bytes[j].toRadixString(16) + " ";
         value = value.length < 3 ? "0" + value : value;
         stdout.write(value);
       }
@@ -263,7 +290,9 @@ class ExpandedKey {
     var key = this.getRoundKey(round);
     key.forEach((word) {
       word.bytes.forEach((byte) {
-        stdout.write(byte.toRadixString(16) + " ");
+        var printVal = byte.toRadixString(16) + " ";
+        printVal = printVal.length < 3 ? "0" + printVal : printVal;
+        stdout.write(printVal);
       });
       print("");
     });

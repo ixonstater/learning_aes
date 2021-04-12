@@ -7,6 +7,7 @@
         "rcon",
         "rijmen",
         "rijndael",
-        "xor'ed"
+        "xor'ed",
+        "xoring"
     ]
 }
