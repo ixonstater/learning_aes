@@ -2,7 +2,7 @@ import 'lib/aes.dart';
 
 void main(List<String> args) {
   String msg = "hello";
-  var key = new AesSymmetricKey();
+  var key = new AesSymmetricKey.blogExampleKey();
   var encryptor = new AesEncrypt(key);
 
   var start = DateTime.now();

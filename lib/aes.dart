@@ -10,8 +10,26 @@ class AesSymmetricKey {
     var rng = Random.secure();
     _keyBytes = List.generate(16, (index) => rng.nextInt(255));
   }
-  AesSymmetricKey.fromKeyFile() {}
-  AesSymmetricKey.fromKeyString() {}
+  AesSymmetricKey.blogExampleKey() {
+    _keyBytes = [
+      0x01,
+      0x0d,
+      0x0c,
+      0x03,
+      0xaf,
+      0x78,
+      0x92,
+      0x1a,
+      0x4c,
+      0xe5,
+      0x12,
+      0x6a,
+      0x7c,
+      0xac,
+      0xef,
+      0xd2,
+    ];
+  }
 
   List<int> getBytes(int start, int end) {
     return this._keyBytes.sublist(start, end);
@@ -312,9 +330,7 @@ class Sbox {
 
   void _initialize() {
     this._populateLogAndAntilog();
-    this.printLogAndAntiLog();
     this._fillSboxWithMultiplicativeInverse();
-    this.printSbox();
     this._applyAffineTransformToSbox();
   }
 
