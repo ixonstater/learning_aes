@@ -529,6 +529,62 @@ f0 e6 a8 74
 3a ab 25 ee
         </pre>
         <h3>Mix Columns</h3>
-        <h3>Full Example</h3>
+        <p class = "text-column">
+            The mix columns operation is the final operation in a round of encryption. This operation takes place the fewest times as it is  omitted in both
+            the first and final rounds. It is essentially a matrix multiplication in Gf(256); this makes it different from ordinary matrix multiplication. All
+            arithmetic operations take place in the finite field rather than in ordinary integer space. Matrices can only be multiplied if their dimensions
+            match some constraints. In order to both match these constraints and to maximize diffusion during this step each 4x4 block of bytes is multiplied
+            by a 4x4 matrix:
+        </p>
+        <pre class = "code-block">
+AES Mix Columns Matrix
+2 3 1 1
+1 2 3 1
+1 1 2 3
+3 1 1 2
+        </pre>
+        <p class = "text-column">
+            Continuing our example from before:
+        </p>
+        <pre class = "code-block">
+Bit Block Before Mix Columns
+a8 02 3c 33 
+f0 e6 a8 74 
+21 c0 80 3d 
+3a ab 25 ee
+
+Remember addition is Xor in Gf(256)
+
+Mix Byte (0, 0)
+(a8 * 2) + (f0 * 3) + (21 * 1) + (3a * 1)
+4b + 0b + 21 + 3a = 5b
+
+Mix Byte (0, 1)
+(a8 * 1) + (f0 * 2) + (21 * 3) + (3a * 1)
+a8 + fb + 63 + 3a = 0a
+
+Bit Block After Mix Columns
+5b 5e 3e 29 
+0a 25 c9 72 
+54 99 e0 14 
+46 6d 26 db
+        </pre>
+        <h3>Conclusion, Acknowledgements and Further Sources</h3>
+        <p class = "text-column">
+            This concludes my post about AES. A full dart program implementing AES-128 in ECB can be found on my github page 
+            <a href = "https://github.com/ixonstater/learning_aes">here</a>. I drew upon many different sources and articles as I was learning about AES
+            and I would like to thank the people and organizations who wrote them.
+        </p>
+        <ul>
+            <li class = "text-column">
+                <a href = "https://www.samiam.org/rijndael.html">Sam Trenholme</a>
+                <a href = "https://www.cse.wustl.edu/~jain/cse571-11/ftp/l_05aes.pdf">Raj Jain</a>
+                <a href = "https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">Wikipedia</a>
+                <a href = "https://crypto.stackexchange.com">The community at the Crypto Stack Exchange</a>
+            </li>
+        </ul>
+        <p class = "text-column">
+            A full example of AES with our example key and data can be found <a>here</a> for reference sake. Thanks for reading!
+        </p>
     </div>
 </body>
