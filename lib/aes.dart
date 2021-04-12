@@ -9,6 +9,24 @@ class AesSymmetricKey {
   AesSymmetricKey() {
     var rng = Random.secure();
     _keyBytes = List.generate(16, (index) => rng.nextInt(255));
+    _keyBytes = [
+      0x0f,
+      0x15,
+      0x71,
+      0xc9,
+      0x47,
+      0xd9,
+      0xe8,
+      0x59,
+      0x0c,
+      0xb7,
+      0xad,
+      0xd6,
+      0xaf,
+      0x7f,
+      0x67,
+      0x98
+    ];
   }
   AesSymmetricKey.blogExampleKey() {
     _keyBytes = [
@@ -84,6 +102,24 @@ class AesEncrypt {
 
   String encrypt(String msg, {EncryptedMessage? blogData = null}) {
     List<int> data = EncryptedMessage.convertStringToByteArray(msg);
+    data = [
+      0x01,
+      0x23,
+      0x45,
+      0x67,
+      0x89,
+      0xab,
+      0xcd,
+      0xef,
+      0xfe,
+      0xdc,
+      0xba,
+      0x98,
+      0x76,
+      0x54,
+      0x32,
+      0x10
+    ];
     var encryptedMsg = blogData ?? new EncryptedMessage(this._key, data);
 
     for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
@@ -234,7 +270,7 @@ class EncryptedBlock {
   void printBlock() {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        var value = this.data[i].bytes[j].toRadixString(16) + " ";
+        var value = this.data[j].bytes[i].toRadixString(16) + " ";
         value = value.length < 3 ? "0" + value : value;
         stdout.write(value);
       }
@@ -288,14 +324,15 @@ class ExpandedKey {
 
   void printKey(int round) {
     var key = this.getRoundKey(round);
-    key.forEach((word) {
-      word.bytes.forEach((byte) {
-        var printVal = byte.toRadixString(16) + " ";
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < 4; j++) {
+        var printVal = key[j].bytes[i].toRadixString(16) + " ";
         printVal = printVal.length < 3 ? "0" + printVal : printVal;
         stdout.write(printVal);
-      });
-      print("");
-    });
+      }
+
+      print(" ");
+    }
   }
 }
 
