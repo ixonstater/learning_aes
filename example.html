@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            keyExpansionUrl = "key_expansion.json"
+            encryptionRoundsUrl = "encryption_rounds.json"
+
+            async function requestJson(){
+                var expansion = await fetch(keyExpansionUrl)
+                expansion = await expansion.json()
+                var encryption = await fetch(encryptionRoundsUrl)
+                encryption = await encryption.json()
+                return [expansion, encryption]
+            }
+
+            function renderKeyExpansion(data){
+                var appendPoint = document.getElementById("key-expansion")
+                for(var i = 0; i < 10; i++){
+                    var roundKey = []
+                    var row = document.createElement("tr")
+                    for(var j = 0; j < 8; j++){
+                        var dataIndex = i * 8 + j
+                        var cell = document.createElement("td")
+                        var word = data[dataIndex].wordValue
+                        cell.innerHTML = squashWordArray(word)
+                        if(j > 3){
+                            roundKey.push(word)
+                        }
+                        row.appendChild(cell)
+                    }
+                    cell = document.createElement("td")
+                    cell.innerHTML = assembleRoundKeyHtml(roundKey)
+                    row.appendChild(cell)
+                    appendPoint.appendChild(row)
+                }
+            }
+
+            function assembleRoundKeyHtml(words){
+                var html = ""
+                for (var i = 0; i < 4; i++){
+                    column = [words[0][i], words[1][i], words[2][i], words[3][i]]
+                    html += squashWordArray(column) + "<br>"
+                }
+
+                return html
+            }
+
+            function squashWordArray(word){
+                var paddedWord = ""
+                for(var i = 0; i < 4; i++){
+                    var elem = word[i]
+                    paddedWord += (elem.length < 2 ? "0" + elem : elem) + " "
+                }
+
+                return paddedWord
+            }
+
+            function renderEncryptionRounds(data){
+
+            }
+
+            async function main(){
+                var data = await requestJson()
+                renderKeyExpansion(data[0])
+                renderEncryptionRounds(data[1])
+            }
+            document.addEventListener("DOMContentLoaded", main)
+        </script>
+        <style>
+            body {
+                font-family: monospace;
+            }
+            table, tr, td, th {
+                border: solid black 3px;
+                border-collapse: collapse;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>AES Encryption Example</h1>
+        <h3>Key Expansion Complete Example</h3>
+        <table id = "key-expansion">
+            <tr>
+                <th>Left Shift</th>
+                <th>Sub Bytes</th>
+                <th>Apply Rcon</th>
+                <th>New Rcon</th>
+                <th>Word 1</th>
+                <th>Word 2</th>
+                <th>Word 3</th>
+                <th>Word 4</th>
+                <th>Round Key</th>
+            </tr>
+            <tr>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td>N/A</td>
+                <td>01 00 00 00</td>
+                <td>01 af 4c 7c</td>
+                <td>0d 78 e5 ac</td>
+                <td>0c 92 12 ef</td>
+                <td>03 1a 6a d2</td>
+                <td>01 0d 0c 03<br>af 78 92 1a<br>4c e5 12 6a<br>7c ac ef d2<br></td>
+            </tr>
+        </table>
+    </body>
+</html>
