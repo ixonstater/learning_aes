@@ -260,6 +260,8 @@ class ExpandedKey {
   }
 
   void _expand() {
+    KeyExapansionExampleCreator obj = new KeyExapansionExampleCreator();
+
     for (var roundNumber = 1; roundNumber < 11; roundNumber++) {
       for (var wordNumber = 0; wordNumber < 4; wordNumber++) {
         // Create a new word here to avoid corrupting previous round keys
@@ -267,19 +269,28 @@ class ExpandedKey {
             _words[roundNumber * 4 + wordNumber - 1].bytes);
         var fourWordsAgo = this._words[roundNumber * 4 + wordNumber - 4];
         if (wordNumber == 0) {
-          this._modifyFirstWordInRoundKey(previousWord);
+          this._modifyFirstWordInRoundKey(previousWord, obj);
         }
         this._words.add(previousWord ^ fourWordsAgo);
+        obj.addWord(
+            "Key " + roundNumber.toString() + " Word " + wordNumber.toString(),
+            previousWord ^ fourWordsAgo);
       }
     }
+
+    obj.writeWords();
   }
 
-  void _modifyFirstWordInRoundKey(Word word) {
+  void _modifyFirstWordInRoundKey(Word word, KeyExapansionExampleCreator obj) {
     word << 1;
+    obj.addWord("Rotate Bytes", word);
     this._sbox.substitute(word);
+    obj.addWord("Sub Bytes", word);
     word.xorEquals(this._roundConstant);
+    obj.addWord("Xor with Rcon", word);
     this._roundConstant.bytes[0] =
         this._sbox.galoisMultiplication(2, this._roundConstant.bytes[0]);
+    obj.addWord("New Rcon", this._roundConstant);
   }
 
   List<Word> getRoundKey(int round) {
@@ -457,5 +468,21 @@ class Sbox {
     }
 
     print("");
+  }
+}
+
+class KeyExapansionExampleCreator {
+  List words = [];
+
+  void writeWords() {
+    var txt = jsonEncode(this.words);
+    var file = File("./key_expansion.json");
+    file.open();
+    file.writeAsStringSync(txt);
+  }
+
+  void addWord(String wordName, Word wordValue) {
+    List word = wordValue.bytes.map((e) => e.toRadixString(16)).toList();
+    this.words.add({"wordName": wordName, "wordValue": word});
   }
 }
