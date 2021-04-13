@@ -85,27 +85,36 @@ class AesEncrypt {
   String encrypt(String msg, {EncryptedMessage? blogData = null}) {
     List<int> data = EncryptedMessage.convertStringToByteArray(msg);
     var encryptedMsg = blogData ?? new EncryptedMessage(this._key, data);
+    var obj = new EncryptionRoundExampleCreator();
 
     for (var blkNum = 0; blkNum < encryptedMsg.blocks.length; blkNum++) {
       for (var roundNum = 0; roundNum < 11; roundNum++) {
         if (roundNum == 0) {
           encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
+          obj.addState("Add Round Key", encryptedMsg.blocks[blkNum]);
         } else if (roundNum == 10) {
           encryptedMsg.substituteBytes(encryptedMsg.blocks[blkNum], this._sbox);
+          obj.addState("Sub Bytes", encryptedMsg.blocks[blkNum]);
           encryptedMsg.blocks[blkNum] =
               encryptedMsg.shiftRows(encryptedMsg.blocks[blkNum]);
+          obj.addState("Shift Rows", encryptedMsg.blocks[blkNum]);
           encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
+          obj.addState("Add Round Key", encryptedMsg.blocks[blkNum]);
         } else {
           encryptedMsg.substituteBytes(encryptedMsg.blocks[blkNum], this._sbox);
+          obj.addState("Sub Bytes", encryptedMsg.blocks[blkNum]);
           encryptedMsg.blocks[blkNum] =
               encryptedMsg.shiftRows(encryptedMsg.blocks[blkNum]);
+          obj.addState("Shift Rows", encryptedMsg.blocks[blkNum]);
           encryptedMsg.blocks[blkNum] =
               encryptedMsg.mixColumns(encryptedMsg.blocks[blkNum], this._sbox);
+          obj.addState("Mix Columns", encryptedMsg.blocks[blkNum]);
           encryptedMsg.addRoundKey(encryptedMsg.blocks[blkNum], roundNum);
+          obj.addState("Add Round Key", encryptedMsg.blocks[blkNum]);
         }
       }
     }
-
+    obj.writeFile();
     return encryptedMsg.toString();
   }
 }
@@ -484,5 +493,23 @@ class KeyExapansionExampleCreator {
   void addWord(String wordName, Word wordValue) {
     List word = wordValue.bytes.map((e) => e.toRadixString(16)).toList();
     this.words.add({"wordName": wordName, "wordValue": word});
+  }
+}
+
+class EncryptionRoundExampleCreator {
+  List states = [];
+
+  void writeFile() {
+    var txt = jsonEncode(this.states);
+    var file = File("./encryption_rounds.json");
+    file.open();
+    file.writeAsStringSync(txt);
+  }
+
+  void addState(String blockName, EncryptedBlock blk) {
+    List words = blk.data
+        .map((a) => a.bytes.map((e) => e.toRadixString(16)).toList())
+        .toList();
+    states.add({"blockName": blockName, "blockState": words});
   }
 }
