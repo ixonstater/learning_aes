@@ -14,7 +14,7 @@
             }
 
             function renderKeyExpansion(data){
-                var appendPoint = document.getElementById("key-expansion")
+                var appendPoint = document.getElementById("key-expansion").firstElementChild
                 for(var i = 0; i < 10; i++){
                     var roundKey = []
                     var row = document.createElement("tr")
@@ -56,7 +56,24 @@
             }
 
             function renderEncryptionRounds(data){
-
+                var appendPoint = document.getElementById("encryption-rounds").firstElementChild
+                for (var i = 0; i < 11; i++) {
+                    var row = document.createElement("tr")
+                    for (var j = 0; j < 4; j++) {
+                        var roundIndex = i * 4 + j
+                        var cellValue = ""
+                        if (!data[roundIndex].hasOwnProperty("blockState")) {
+                            cellValue = "N/A"
+                        }
+                        else {
+                            cellValue = assembleRoundKeyHtml(data[roundIndex].blockState)
+                        }
+                        var newCell = document.createElement("td")
+                        newCell.innerHTML = cellValue
+                        row.appendChild(newCell)
+                    }
+                    appendPoint.appendChild(row)
+                }
             }
 
             async function main(){
@@ -77,6 +94,7 @@
 
             th, td {
                 padding: 6px;
+                text-align: center;
             }
         </style>
     </head>
@@ -84,28 +102,41 @@
         <h1>AES Encryption Example</h1>
         <h3>Key Expansion Complete Example</h3>
         <table id = "key-expansion">
-            <tr>
-                <th>Left Shift</th>
-                <th>Sub Bytes</th>
-                <th>Apply Rcon</th>
-                <th>New Rcon</th>
-                <th>Word 1</th>
-                <th>Word 2</th>
-                <th>Word 3</th>
-                <th>Word 4</th>
-                <th>Round Key</th>
-            </tr>
-            <tr>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>01 00 00 00</td>
-                <td>01 af 4c 7c</td>
-                <td>0d 78 e5 ac</td>
-                <td>0c 92 12 ef</td>
-                <td>03 1a 6a d2</td>
-                <td>01 0d 0c 03<br>af 78 92 1a<br>4c e5 12 6a<br>7c ac ef d2<br></td>
-            </tr>
+            <tbody>
+                <tr>
+                    <th>Left Shift</th>
+                    <th>Sub Bytes</th>
+                    <th>Apply Rcon</th>
+                    <th>New Rcon</th>
+                    <th>Word 1</th>
+                    <th>Word 2</th>
+                    <th>Word 3</th>
+                    <th>Word 4</th>
+                    <th>Round Key</th>
+                </tr>
+                <tr>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                    <td>01 00 00 00</td>
+                    <td>01 af 4c 7c</td>
+                    <td>0d 78 e5 ac</td>
+                    <td>0c 92 12 ef</td>
+                    <td>03 1a 6a d2</td>
+                    <td>01 0d 0c 03<br>af 78 92 1a<br>4c e5 12 6a<br>7c ac ef d2<br></td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>Encryption Rounds Complete Example</h3>
+        <table id = "encryption-rounds">
+            <tbody>
+                <tr>
+                    <th>Sub Bytes</th>
+                    <th>Shift Rows</th>
+                    <th>Mix Columns</th>
+                    <th>Add Round Key</th>
+                </tr>
+            </tbody>
         </table>
     </body>
 </html>
