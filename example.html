@@ -1,104 +1,114 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <script>
-            keyExpansionUrl = "key_expansion.json"
-            encryptionRoundsUrl = "encryption_rounds.json"
+<div id = "example-page-wrapper">
+    <script>
+        keyExpansionUrl = "/static_assets/aes_example/key_expansion.json"
+        encryptionRoundsUrl = "/static_assets/aes_example/encryption_rounds.json"
 
-            async function requestJson(){
-                var expansion = await fetch(keyExpansionUrl)
-                expansion = await expansion.json()
-                var encryption = await fetch(encryptionRoundsUrl)
-                encryption = await encryption.json()
-                return [expansion, encryption]
-            }
+        async function requestJson(){
+            var expansion = await fetch(keyExpansionUrl)
+            expansion = await expansion.json()
+            var encryption = await fetch(encryptionRoundsUrl)
+            encryption = await encryption.json()
+            return [expansion, encryption]
+        }
 
-            function renderKeyExpansion(data){
-                var appendPoint = document.getElementById("key-expansion").firstElementChild
-                for(var i = 0; i < 10; i++){
-                    var roundKey = []
-                    var row = document.createElement("tr")
-                    for(var j = 0; j < 8; j++){
-                        var dataIndex = i * 8 + j
-                        var cell = document.createElement("td")
-                        var word = data[dataIndex].wordValue
-                        cell.innerHTML = squashWordArray(word)
-                        if(j > 3){
-                            roundKey.push(word)
-                        }
-                        row.appendChild(cell)
+        function renderKeyExpansion(data){
+            var appendPoint = document.getElementById("key-expansion").firstElementChild
+            for(var i = 0; i < 10; i++){
+                var roundKey = []
+                var row = document.createElement("tr")
+                for(var j = 0; j < 8; j++){
+                    var dataIndex = i * 8 + j
+                    var cell = document.createElement("td")
+                    var word = data[dataIndex].wordValue
+                    cell.innerHTML = squashWordArray(word)
+                    if(j > 3){
+                        roundKey.push(word)
                     }
-                    cell = document.createElement("td")
-                    cell.innerHTML = assembleRoundKeyHtml(roundKey)
                     row.appendChild(cell)
-                    appendPoint.appendChild(row)
                 }
+                cell = document.createElement("td")
+                cell.innerHTML = assembleRoundKeyHtml(roundKey)
+                row.appendChild(cell)
+                appendPoint.appendChild(row)
+            }
+        }
+
+        function assembleRoundKeyHtml(words){
+            var html = ""
+            for (var i = 0; i < 4; i++){
+                column = [words[0][i], words[1][i], words[2][i], words[3][i]]
+                html += squashWordArray(column) + "<br>"
             }
 
-            function assembleRoundKeyHtml(words){
-                var html = ""
-                for (var i = 0; i < 4; i++){
-                    column = [words[0][i], words[1][i], words[2][i], words[3][i]]
-                    html += squashWordArray(column) + "<br>"
-                }
+            return html
+        }
 
-                return html
+        function squashWordArray(word){
+            var paddedWord = ""
+            for(var i = 0; i < 4; i++){
+                var elem = word[i]
+                paddedWord += (elem.length < 2 ? "0" + elem : elem) + " "
             }
 
-            function squashWordArray(word){
-                var paddedWord = ""
-                for(var i = 0; i < 4; i++){
-                    var elem = word[i]
-                    paddedWord += (elem.length < 2 ? "0" + elem : elem) + " "
-                }
+            return paddedWord
+        }
 
-                return paddedWord
-            }
-
-            function renderEncryptionRounds(data){
-                var appendPoint = document.getElementById("encryption-rounds").firstElementChild
-                for (var i = 0; i < 11; i++) {
-                    var row = document.createElement("tr")
-                    for (var j = 0; j < 4; j++) {
-                        var roundIndex = i * 4 + j
-                        var cellValue = ""
-                        if (!data[roundIndex].hasOwnProperty("blockState")) {
-                            cellValue = "N/A"
-                        }
-                        else {
-                            cellValue = assembleRoundKeyHtml(data[roundIndex].blockState)
-                        }
-                        var newCell = document.createElement("td")
-                        newCell.innerHTML = cellValue
-                        row.appendChild(newCell)
+        function renderEncryptionRounds(data){
+            var appendPoint = document.getElementById("encryption-rounds").firstElementChild
+            for (var i = 0; i < 11; i++) {
+                var row = document.createElement("tr")
+                for (var j = 0; j < 4; j++) {
+                    var roundIndex = i * 4 + j
+                    var cellValue = ""
+                    if (!data[roundIndex].hasOwnProperty("blockState")) {
+                        cellValue = "N/A"
                     }
-                    appendPoint.appendChild(row)
+                    else {
+                        cellValue = assembleRoundKeyHtml(data[roundIndex].blockState)
+                    }
+                    var newCell = document.createElement("td")
+                    newCell.innerHTML = cellValue
+                    row.appendChild(newCell)
                 }
+                appendPoint.appendChild(row)
             }
+        }
 
-            async function main(){
-                var data = await requestJson()
-                renderKeyExpansion(data[0])
-                renderEncryptionRounds(data[1])
-            }
-            document.addEventListener("DOMContentLoaded", main)
-        </script>
-        <style>
-            body {
-                font-family: monospace;
-            }
-            table, tr, td, th {
-                border: solid black 3px;
-                border-collapse: collapse;
-            }
+        async function main(){
+            var data = await requestJson()
+            renderKeyExpansion(data[0])
+            renderEncryptionRounds(data[1])
+        }
+        document.addEventListener("DOMContentLoaded", main)
+    </script>
+    <style>
+        body {
+            font-family: monospace;
+        }
+        table, tr, td, th {
+            border: solid black 3px;
+            border-collapse: collapse;
+        }
 
-            th, td {
-                padding: 6px;
-                text-align: center;
-            }
-        </style>
-    </head>
-    <body>
+        th, td {
+            padding: 6px;
+            text-align: center;
+        }
+        h2{
+            font-size: 28px !important;
+        }
+        h3{
+            text-decoration: underline;
+            font-size: 18px !important;
+        }
+        .entry-title {
+            display: none;
+        }
+        .entry-meta {
+            display: none;
+        }
+    </style>
+    <div id = "example-page-content">
         <h1>AES Encryption Example</h1>
         <h3>Key Expansion Complete Example</h3>
         <p>For a complete layman's explanation of AES including the underlying mathematics please look <a href = "blog.html">here</a>.</p>
@@ -139,5 +149,5 @@
                 </tr>
             </tbody>
         </table>
-    </body>
-</html>
+    </div>
+</div>
