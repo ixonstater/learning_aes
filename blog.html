@@ -99,7 +99,7 @@ A_______B___|___C
             Probably the single most important set of operations in AES encryption are those involving Galois Fields. Evariste Galois, pronounced Galwaa,
             was a brilliant French mathematician who died very young after being wounded in a duel. His work in finite fields is crucial to the Rijndael
             cipher and AES. A finite field (also known as a Galois field) is a field that contains a finite (limited / constrained) number of elements. Essentially it is a series of
-            integers starting at x and ending at x + i where i is the length of the field. The finite field is maintained by defining numeric operations eg.
+            integers starting at 0 and ending at i - 1 where i is the length of the field. The finite field is maintained by defining numeric operations eg.
             addition and multiplication such that any operation applied to members of the field will produce another number in the field. For example in
             Gf(5) (denoting the field {0, 1, 2, 3, 4}), 1 + 2 = 3, but 4 + 1 = 0. This type of operation should be familiar to anyone with experience
             using the modulus operator. Indeed, for any prime limit eg Gf(3), Gf(19), Gf(13), addition and multiplication can be defined as c = (a + b) % i
@@ -113,9 +113,9 @@ A_______B___|___C
             multiplication and addition.
         </p>
         <p class = "text-column">
-            It is helpful to understand a little about the representation of numbers in a Galois field as polynomials with coefficients in Gf(2). Remember
+            It is helpful to understand the representation of numbers in a base 2 Galois field as polynomials with coefficients in Gf(2). Remember
             that Gf(2) = {0, 1}, so the possible coefficients in our polynomial are either 0 or 1. This lets us represent any number in any Galois field
-            Gf(p^k) as a polynomial where the coefficient is the binary digit occupying that space.  For example 41 = 00101001 = 0x^7 + 0x^6 + 1x^5 + 0x^4
+            Gf(2^k) as a polynomial where the coefficient is the binary digit occupying that space.  For example 41 = 00101001 = 0x^7 + 0x^6 + 1x^5 + 0x^4
             + 1x^3 + 0x^2 + 0x^1 + 1x^0 = x^5 + x^3 + 1. This representation may seem convoluted, but it is necessary to preform addition and multiplication
             in a prime power Galois field. Galois operations can be done with any prime base, however base 2 is most popular in computer applications because
             of the numbers binary nature.
@@ -147,8 +147,8 @@ A_______B___|___C
             <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">here</a>.
         </p>
         <p class = "text-column">
-            For practical application in AES multiplication is usually done via lookup in a table of values rather than via a computational process (unless
-            the implementation is built in a context with very low memory availability). This method requires 256 bytes of total memory space. In addition,
+            For practical application in AES multiplication is usually done via lookup in a table of values rather than a computational process (unless
+            the implementation is built in a context with very low memory availability). The lookup method requires 256 bytes of total memory space. In addition,
             Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version of the
             <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">Peasant's Algorithm</a>. Included here is a dart function which implements that
             algorithm.
