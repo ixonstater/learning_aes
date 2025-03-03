@@ -1,167 +1,243 @@
 <style>
-    .short-divider{
+    .short-divider {
         max-width: 500px;
         min-width: 100px;
         height: 1px;
         border: solid 1px black;
     }
-    .text-column{
+
+    .text-column {
         max-width: 700px;
     }
-    .code-block{
+
+    .code-block {
         background-color: #ccc;
         max-width: 700px;
         padding: 20px;
         border: black solid 2px;
     }
-    h2{
-       font-size: 28px !important;
+
+    .inline-code {
+        font-family: monospace;
+        font-size: 14px;
+        border-radius: 5px;
+        background-color: #ccc;
+        padding-left: 2px;
+        padding-right: 2px;
     }
-    h3{
+
+    h2 {
+        font-size: 28px !important;
+    }
+
+    h3 {
         text-decoration: underline;
-         font-size: 28px !important;
+        font-size: 28px !important;
     }
-    h4{
+
+    h4 {
         font-size: 22px !important;
     }
+
     .entry-title {
         display: none;
     }
+
     .entry-meta {
         display: none;
     }
 </style>
-<div id = "post-content">
+<div id="post-content">
     <h2>My Adventures with AES</h2>
-    <div class = "short-divider"></div>
+    <div class="short-divider"></div>
     <h5>My experiences writing a ground-up implementation of the Advanced Encryption Standard in Dart.</h5>
-    <p class = "text-column">
-        The AES is a commonly used encryption standard which was adopted by the United States Government following a NIST competition.
-        Its predecessor, DES or the Data Encryption Standard, had been shown to be vulnerable to several types of attacks and a complete
-        crack of the DES cipher was considered imminent. The cipher which won the NIST competition to become the AES was the Rijndael cipher.
-        Designed by two Belgian cryptographers, Vincent Rijmen and Joan Daemen, the Rijndael cipher won out over fifteen serious competitors
-        which also met the NIST requirements for entry.  After being ratified by NIST it was accepted by the US Government in 2002 as a federal
+    <p class="text-column">
+        The AES is a commonly used encryption standard which was adopted by the United States Government following a
+        NIST competition.
+        Its predecessor, DES or the Data Encryption Standard, had been shown to be vulnerable to several types of
+        attacks and a complete
+        crack of the DES cipher was considered imminent. The cipher which won the NIST competition to become the AES was
+        the Rijndael cipher.
+        Designed by two Belgian cryptographers, Vincent Rijmen and Joan Daemen, the Rijndael cipher won out over fifteen
+        serious competitors
+        which also met the NIST requirements for entry. After being ratified by NIST it was accepted by the US
+        Government in 2002 as a federal
         standard.
     </p>
     <br>
     <h3>A High-Level Overview</h3>
-    <p class = "text-column">
-        AES works by applying a repetitive process to a block of 128 bits of data. This process allows the data to be diffused sufficiently far
-        from its original state as well as encrypted multiple times using multiple keys (referred to as round keys in the cipher). Typically the
-        process starts by obtaining 128, 192 or 256 bits of secure random data from an SPRNG which are used as the private key of the encryption.
-        The key is then subjected to a process known as key expansion where the original key is used to generate 10, 12 or 14 round keys depending
-        on the length of the private key.  Once these keys are derived the actual encryption begins.
+    <p class="text-column">
+        AES works by applying a repetitive process to a block of 128 bits of data. This process allows the data to be
+        diffused sufficiently far
+        from its original state as well as encrypted multiple times using multiple keys (referred to as round keys in
+        the cipher). Typically the
+        process starts by obtaining 128, 192 or 256 bits of secure random data from an SPRNG which are used as the
+        private key of the encryption.
+        The key is then subjected to a process known as key expansion where the original key is used to generate 10, 12
+        or 14 round keys depending
+        on the length of the private key. Once these keys are derived the actual encryption begins.
     </p>
-    <p class = "text-column">
-        First the private key is applied to the current block (I will go over what "applied" entails later), this comprises the complete first
-        round of encryption.  Next the block undergoes three processes to diffuse the data, 1) Substitute bytes, 2) Shift rows, 3) Mix columns;
-        after these three processes complete the next round key is applied and the cycle begins again. This cycle occurs a total of 9, 11 or 13
-        times depending on the key size. Finally, for the last round, the substitute bytes and shift rows steps occur before the final
-        round key is applied.  Note that the mix columns step is omitted in the final round.  Once the first block of 128 bits is encrypted subsequent
-        blocks are encrypted the same way.  If the total number of bits to be encrypted cannot be broken evenly into 128 bit blocks the last block is
+    <p class="text-column">
+        First the private key is applied to the current block (I will go over what "applied" entails later), this
+        comprises the complete first
+        round of encryption. Next the block undergoes three processes to diffuse the data, 1) Substitute bytes, 2) Shift
+        rows, 3) Mix columns;
+        after these three processes complete the next round key is applied and the cycle begins again. This cycle occurs
+        a total of 9, 11 or 13
+        times depending on the key size. Finally, for the last round, the substitute bytes and shift rows steps occur
+        before the final
+        round key is applied. Note that the mix columns step is omitted in the final round. Once the first block of 128
+        bits is encrypted subsequent
+        blocks are encrypted the same way. If the total number of bits to be encrypted cannot be broken evenly into 128
+        bit blocks the last block is
         padded with zeros.
     </p>
     <br>
-    <h3>A Few Notes</h3>
-    <ol>
-        <li class = "text-column">
-            I am not a cryptographer, the following information is my understanding of the AES and may be incorrect. I suggest that you check this
-            information against other sources if you are trying to learn about AES beyond simple curiosity.
-        </li>
-        <li class = "text-column">
-            This post contains my code implementing AES, the code can also be found <a href = "https://github.com/ixonstater/learning_aes">here</a>
-            on my github page. This code should NOT be used ANYWHERE unless you are trying to learn about AES. While the AES has never been cracked,
-            untested implementations are often vulnerable to a group of exploits known as side-channel attacks.
-        </li>
-        <li class = "text-column">
-            My implementation of AES does not use a secure cipher mode, instead it uses the "default" AES encryption mode ECB or Electronic Code Book.
-            I will not cover different cipher modes in depth here as they do not affect the base AES algorithm, but you should note that using an
-            insecure cipher mode can also leave your information in a vulnerable state post encryption.
-        </li>
-    </ol>
-    <br>
-    <h3>Fundamental Mathematics in the AES</h3>
-    <h4>Bitwise Xor</h4>
-    <p class = "text-column">
-        Xor is the logic gate that AES uses to apply round keys to pieces of data. Xor works well for this because each possible output is distributed
-        evenly among the possible inputs. That is, an output of 1 and an output of 0 both have two distinct inputs that can produce them. If an and gate
-        or a normal or gate were used an output of 0 or 1 depending on which was used could be translated directly to the given inputs. An Xor truth
+    <h3>Fundamental Mathematics in AES</h3>
+    <h4>Bitwise XOR</h4>
+    <p class="text-column">
+        XOR is the logic gate that AES uses to apply round keys to pieces of data. XOR works well for this because each
+        possible output is distributed
+        evenly among the possible inputs. That is, an output of 1 and an output of 0 both have two distinct inputs that
+        can produce them. If an AND gate
+        or an OR gate were used an output of 0 or 1, depending on which was used, could be translated directly to
+        the given inputs. An XOR truth
         table looks like this:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 A_______B___|___C
 0       0   |   0
 0       1   |   1
 1       0   |   1
 1       1   |   0
     </pre>
-    <p class = "text-column">
-        A bitwise Xor works by applying the Xor operator across each bit in two corresponding bit sets. For example, 010101 and 110011
-        <br>010101
-        <br>110011
-        <br>______
-        <br>100110
+    <p class="text-column">
+        A bitwise XOR works by applying the XOR operator across each bit in two corresponding bit sets. For example,
+        <span class="inline-code">010101</span> and <span class="inline-code">110011</span>
+    <pre class="code-block">
+010101
+110011
+______
+100110
+    </pre>
     </p>
     <h4>Galois Fields</h4>
-    <p class = "text-column">
-        Probably the single most important set of operations in AES encryption are those involving Galois Fields. Evariste Galois, pronounced Galwaa,
-        was a brilliant French mathematician who died very young after being wounded in a duel. His work in finite fields is crucial to the Rijndael
-        cipher and AES. A finite field (also known as a Galois field) is a field that contains a finite (limited / constrained) number of elements. Essentially it is a series of
-        integers starting at 0 and ending at i - 1 where i is the length of the field. The finite field is maintained by defining numeric operations eg.
-        addition and multiplication such that any operation applied to members of the field will produce another number in the field. For example in
-        Gf(5) (denoting the field {0, 1, 2, 3, 4}), 1 + 2 = 3, but 4 + 1 = 0. This type of operation should be familiar to anyone with experience
-        using the modulus operator. Indeed, for any prime limit eg Gf(3), Gf(19), Gf(13), addition and multiplication can be defined as c = (a + b) % i
-        and c = (a * b) % i where i is the limit of the Galois field.
+    <p class="text-column">
+        A finite field (also known as a Galois field) is a field that contains a finite number of elements. Essentially
+        it is a series of
+        integers starting at 0 and ending at i - 1 where i is the length of the field. The finite field is maintained by
+        defining numeric operations eg.
+        addition and multiplication such that any operation applied to members of the field will produce another number
+        in the field. For example in
+        <span class="inline-code">Gf(5)</span> (denoting the field <span class="inline-code">{0, 1, 2, 3, 4}</span>),
+        <span class="inline-code">1
+            + 2 = 3</span>, but <span class="inline-code">1 + 4 = 0</span>. This type
+        of operation should
+        be familiar
+        to anyone with experience
+        using the modulus operator. Indeed, for any prime limit eg <span class="inline-code">Gf(3) Gf(13) Gf(19)</span>
+        addition and multiplication
+        can be defined as <span class="inline-code">c = (a + b) % i</span>
+        and <span class="inline-code">c = (a * b) % i</span> where <span class="inline-code">i</span> is the limit of
+        the Galois field.
     </p>
-    <p class = "text-column">
-        Addition and multiplication in prime Galois fields are simple enough, but what about Gf(6) or Gf(8)? As it turns out one of these will work but
-        the other will not; not just any number can be chosen as the limit of a finite field without breaking the constraints on arithmetic operations.
-        The number chosen must be either a prime, or a prime power.  A prime power is a number of the form p^k where k is an arbitrary exponent and p
-        is an arbitrary prime number. If these constraints are followed a finite / Galois field can be constructed, albeit with different rules involving
+    <p class="text-column">
+        Addition and multiplication in prime Galois fields are simple enough, but what about <span
+            class="inline-code">Gf(6)</span> or <span class="inline-code">Gf(8)</span>? As it turns
+        out one of these will work but
+        the other will not; some numbers cannot be chosen as the limit of a finite field without breaking the
+        constraints on arithmetic operations.
+        The number chosen must be either a prime, or a prime power. A prime power is a number of the form <span
+            class="inline-code">p^k</span> where <span class="inline-code">k</span> is
+        an arbitrary exponent and <span class="inline-code">p</span>
+        is an arbitrary prime number. If these constraints are followed a Galois field can be constructed,
+        albeit with different rules involving
         multiplication and addition.
     </p>
-    <p class = "text-column">
-        It is helpful to understand the representation of numbers in a base 2 Galois field as polynomials with coefficients in Gf(2). Remember
-        that Gf(2) = {0, 1}, so the possible coefficients in our polynomial are either 0 or 1. This lets us represent any number in any Galois field
-        Gf(2^k) as a polynomial where the coefficient is the binary digit occupying that space.  For example 41 = 00101001 = 0x^7 + 0x^6 + 1x^5 + 0x^4
-        + 1x^3 + 0x^2 + 0x^1 + 1x^0 = x^5 + x^3 + 1. This representation may seem convoluted, but it is necessary to preform addition and multiplication
-        in a prime power Galois field. Galois operations can be done with any prime base, however base 2 is most popular in computer applications because
-        of the numbers binary nature.
+    <p class="text-column">
+        It is helpful to understand the representation of numbers in a base 2 Galois field as polynomials with
+        coefficients in <span class="inline-code">Gf(2)</span>. Remember
+        that <span class="inline-code">Gf(2) = {0, 1}</span>, so the possible coefficients in our polynomial are
+        <span class="inline-code">{0, 1}</span>. This lets us represent
+        any number in any Galois field
+        <span class="inline-code">Gf(2^k)</span> as a polynomial where the coefficient is the binary digit occupying
+        that space. For example the following are all equivalent:
+    <pre class="code-block">
+41
+
+00101001
+
+0x^7 + 0x^6 + 1x^5 + 0x^4 + 1x^3 + 0x^2 + 0x^1 + 1x^0
+
+x^5 + x^3 + 1
+</pre>
+    This representation may seem convoluted, but it is necessary to preform addition and multiplication
+    in a prime power Galois field.
     </p>
-    <p class = "text-column">
-        Addition is done by adding two numbers (represented as polynomials) from Gf(p^k) in Gf(p). For example
-        <br>41 + 10 in Gf(256)
-        <br>= (x^5 + x^3 + 1) + (x^3 + x)
-        <br>= x^5 + x + 1.
-        <br>Remember, we are adding in Gf(2) which is the prime base of 256 so 1 + 1 = 0; this is the reason that x^3 + x^3 results in 0. This is
-        more easily understood in its binary representation 1010 + 101001 where addition is actually a bitwise Xor operation. The Xor trick only works
-        for Galois fields of base 2 or having a characteristic of 2. Lucky for us AES uses Galois(256) for its operations so the Xor trick is
+    <p class="text-column">
+        Addition is done by adding two numbers (represented as polynomials) from <span
+            class="inline-code">Gf(p^k)</span> in <span class="inline-code">Gf(p)</span>. For example
+        <span class="inline-code">41 + 10</span> in <span class="inline-code">Gf(256)</span>
+    </p>
+    <pre class="code-block">
+10 = 1010 = 1x^3 + 0x^2 + 1x^1 + 0x^2 = (x^3 + x)
+
+41 = 101001 = 1x^5 + 0x^4 + 1x^3 + 0x^2 + 0x^1 + 1x^0 = (x^5 + x^3 + 1)
+
+(x^5 + x^3 + 1) + (x^3 + x)
+
+x^5 + x + 1 = 100011 = 35
+</pre>
+    <p class="text-column">
+        Remember, our possible coefficients come from <span class="inline-code">Gf(2)</span> so <span
+            class="inline-code">1 + 1 = 0</span>; this is the
+        reason that <span class="inline-code">x^3 + x^3 = 0</span>.
+        This is more easily understood in its binary representation <span class="inline-code">1010 + 101001</span> where
+        addition is actually a
+        bitwise XOR operation. The XOR trick only works for Galois fields of base 2 or having a characteristic of 2.
+        Lucky for us AES uses <span class="inline-code">Gf(256)</span> for its operations so the XOR trick is
         applicable.
     </p>
-    <p class = "text-column">
-        Multiplication is more complex than addition and is done by standard polynomial multiplication followed by modular division via some irreducible polynomial which
-        was used define the finite field.  Sounds hard right? It's not too bad if taken one step at a time with an example, so, for example: 12 * 7 in Gf(2^8).
-        <br>12 = x^3 + x^2 (see description of number representation as polynomials in Galois fields above)
-        <br>7 = x^2 + x + 1
-        <br>p = (12 * 7)
-        <br>p = (x^3 + x^2) * (x^2 + x + 1)
-        <br>p = (x^5 + x^4 + x^3) + (x^4 + x^3 + x^2).
-        <br>So far we have just done simple polynomial multiplication; in the next step, consolidating the terms, addition is done like described above, in Gf(2). Therefore
-        our polynomial product
-        <br>p = x^5 + x^2 = 36.
-        <br>Since this does not exceed the limit of our our field, 256, the final step of reducing modulo some
-        irreducible polynomial is not necessary and our final product is 36. It is worth noting that with the reducing polynomial for AES, applying the
-        modulus operation would still result in 36 being the final answer. If you want to see an example involving modulo reduction please look
-        <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">here</a>.
+    <p class="text-column">
+        Multiplication is more complex than addition and is done by standard polynomial multiplication followed by
+        modular division via some irreducible polynomial which
+        was used define the finite field. Sounds hard right? It's not too bad if taken one step at a time with an
+        example, so, for example: <span class="inline-code">12 * 7</span> in <span class="inline-code">Gf(2^8)</span>.
     </p>
-    <p class = "text-column">
-        For practical application in AES multiplication is usually done via lookup in a table of values rather than a computational process (unless
-        the implementation is built in a context with very low memory availability). The lookup method requires 256 bytes of total memory space. In addition,
-        Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version of the
-        <a href = "https://en.wikipedia.org/wiki/Finite_field_arithmetic">Peasant's Algorithm</a>. Included here is a dart function which implements that
+    <pre class="code-block">
+12 = x^3 + x^2
+
+7 = x^2 + x + 1
+
+p = (12 * 7)
+
+p = (x^3 + x^2) * (x^2 + x + 1)
+
+p = (x^5 + x^4 + x^3) + (x^4 + x^3 + x^2).
+</pre>
+    <p class="text-column">
+        <br>So far we have just done simple polynomial multiplication; in the next step, consolidating the terms,
+        addition is done like described above, in <span class="inline-code">Gf(2)</span>. Therefore
+        our polynomial product is <span class="inline-code">p = x^5 + x^2 = 36</span>.
+        <br>Since this does not exceed the limit of our our field, 256, the final step of reducing modulo some
+        irreducible polynomial is not necessary and our final product is 36. It is worth noting that with the reducing
+        polynomial for AES <span class="inline-code">x^8 + x^4 + x^3 + x + 1</span>, applying the
+        modulus operation would still result in 36 being the final answer. If you want to see an example involving
+        modulo reduction please look
+        <a href="https://en.wikipedia.org/wiki/Finite_field_arithmetic">here</a>.
+    </p>
+    <p class="text-column">
+        For practical application in AES multiplication is usually done via lookup in a table of values rather than a
+        computational process (unless
+        the implementation is built in a context with very low memory availability). The lookup method requires 256
+        bytes of total memory space. In addition,
+        Galois multiplication in 2^8 (the field size used in AES) can be done very efficiently using a modified version
+        of the
+        <a href="https://en.wikipedia.org/wiki/Finite_field_arithmetic">Peasant's Algorithm</a>. Included here is a dart
+        function which implements that
         algorithm.
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 int galoisMultiplication(int a, int b) {
     int p = 0;
     int highBitSet;
@@ -182,36 +258,50 @@ int galoisMultiplication(int a, int b) {
 }
     </pre>
     <h3>Sbox Generation</h3>
-    <p class = "text-column">
-        A key piece of Rijndael ciphers is the byte substitution box. At each encryption step, excluding the first round, and during key expansion the
-        byte substitution box, or Sbox, is used to exchange one byte (eight bits) for another. The Rijndael algorithm does not use a dynamically generated
-        Sbox, but rather has a well defined method for generating the same Sbox each time. The Sbox is arranged so that a particular byte can be located
-        with its 4 most significant bits (largest bits) determining the column and its 4 least significant bits determining the row. The procedure for
-        generating the Sbox can be broken into two distinct steps, first each number from 0 - 255 has its multiplicative inverse calculated in Gf(2^8),
-        second each of the multiplicative inverses has an operation known as the Affine Transform applied to it. Lets go over this in depth with some
+    <p class="text-column">
+        A key piece of Rijndael ciphers is the byte substitution box. At each encryption step, excluding the first
+        round, and during key expansion the
+        byte substitution box, or Sbox, is used to exchange one byte (eight bits) for another. The Rijndael algorithm
+        does not use a dynamically generated
+        Sbox, but rather has a well defined method for generating the same Sbox each time. The Sbox is arranged so that
+        a particular byte can be located
+        with its 4 most significant bits (largest bits) determining the column and its 4 least significant bits
+        determining the row. The procedure for
+        generating the Sbox can be broken into two distinct steps, first each number from 0 - 255 has its multiplicative
+        inverse calculated in Gf(2^8),
+        second each of the multiplicative inverses has an operation known as the Affine Transform applied to it. Lets go
+        over this in depth with some
         examples.
     </p>
-    <p class = "text-column">
-        Previously I mentioned that multiplication in a Galois field is typically done via lookup tables rather than a multiplication function. That method
-        is especially applicable to inverse multiplication in finite fields. Calculating the multiplicative inverse of a number in a finite field requires
-        access to log and anti-log (exponent) tables in the same finite field. Once these tables are constructed the multiplicative inverse can be found
-        using the formula anti-log(255 - log(x)). This formula works for all numbers excepting zero which must be handled as a special case; for AES
+    <p class="text-column">
+        Previously I mentioned that multiplication in a Galois field is typically done via lookup tables rather than a
+        multiplication function. That method
+        is especially applicable to inverse multiplication in finite fields. Calculating the multiplicative inverse of a
+        number in a finite field requires
+        access to log and anti-log (exponent) tables in the same finite field. Once these tables are constructed the
+        multiplicative inverse can be found
+        using the formula anti-log(255 - log(x)). This formula works for all numbers excepting zero which must be
+        handled as a special case; for AES
         purposes the inverse of zero is assumed to be zero even though this breaks ordinary mathematic rules.
     </p>
-    <p class = "text-column">
-        Calculating log and anti-log tables for taking the multiplicative inverse of a number requires the use of exponentiation in a finite field. It
-        turns out that certain numbers in the range 0 - i where i is the Galois field limit will generate all possible numbers in the field if repeatedly
+    <p class="text-column">
+        Calculating log and anti-log tables for taking the multiplicative inverse of a number requires the use of
+        exponentiation in a finite field. It
+        turns out that certain numbers in the range 0 - i where i is the Galois field limit will generate all possible
+        numbers in the field if repeatedly
         exponentiated using Galois multiplication. Those numbers are referred to as field generators and work like this,
         <br>g = the generator number
         <br>g*1 = a
         <br>g*a = b
         <br>g*b = c
         <br>g*d = e
-        <br>Eventually if the above process is repeated i times all possible numbers in the set will have been visited. By storing these numbers as they
-        are generated in a loop we can produce a lookup table which will tell us the result of some exponent or logarithm of x. Below is some dart code
+        <br>Eventually if the above process is repeated i times all possible numbers in the set will have been visited.
+        By storing these numbers as they
+        are generated in a loop we can produce a lookup table which will tell us the result of some exponent or
+        logarithm of x. Below is some dart code
         demonstrating the process of generating these tables.
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 void _populateLogAndAntilog() {
     int product = 1;
 
@@ -230,10 +320,10 @@ void _fillSboxWithMultiplicativeInverse() {
     }
 }
     </pre>
-    <p class = "text-column">
+    <p class="text-column">
         The following is a list of all numbers which can be used as generators for the Gf(256) finite field:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 3 5 6 9 11 14 17 18 19 20 23 24 25
 26 28 30 31 33 34 35 39 40 42 44 48
 49 60 62 63 65 69 70 71 72 73 75 76
@@ -248,14 +338,15 @@ void _fillSboxWithMultiplicativeInverse() {
 229 230 231 233 234 235 238 240 241
 244 245 246 248 251 253 254 255
     </pre>
-    <p class = "text-column">
-        After filling the Sbox with multiplicative inverses in Gf(256) the next step is to compute the Affine transform for each value. As I was studying
-        AES I would often come across representations of the transform in a matrix notation. I still do
-        not understand this notation, so I will be explaining the transform as it relates directly to an 8 bit integer. The Affine transform can be defined
-        as the sum (calculated as a bitwise Xor) of the original number, four subsequent circular left rotations of the number, and the vector
-        constant (11000110 in binary, 63 in hexadecimal). To demonstrate more clearly let's examine an example with the number 8d:
+    <p class="text-column">
+        After filling the Sbox with multiplicative inverses in Gf(256) the next step is to compute the Affine transform
+        for each value. The Affine transform can be defined
+        as the sum (calculated as a bitwise XOR) of the original number, four subsequent circular left rotations of the
+        number, and the vector
+        constant (01100011 in binary, 63 in hexadecimal). To demonstrate more clearly let's examine an example with the
+        number 8d:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 8d = 10001101
 
 1 0 0 0 1 1 0 1 +
@@ -269,20 +360,22 @@ _______________
 
 01110111 = 77 (hexadecimal)
     </pre>
-    <p class = "text-column">
-        So, in other words, with an input of 8d we should expect to get an output of 77. This process is repeated for each multiplicative inverse
-        previously calculated and, when finished, produces the entire Rijndael Sbox. The following is a dart function which applies the Affine
+    <p class="text-column">
+        So, in other words, with an input of 8d we should expect to get an output of 77. This process is repeated for
+        each multiplicative inverse
+        previously calculated and, when finished, produces the entire Rijndael Sbox. The following is a dart function
+        which applies the Affine
         transform to each 8 bit multiplicative inverse in a loop.
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 void _applyAffineTransformToSbox() {
     for (var i = 0; i < _fieldLimit; i++) {
         var x = _sBox[i];
         var s = _sBox[i];
 
         for (var j = 0; j < 4; j++) {
-        s = (s << 1) | (s >> 7);
-        x ^= s;
+            s = (s << 1) | (s >> 7);
+            x ^= s;
         }
 
         x ^= 0x63;
@@ -292,12 +385,14 @@ void _applyAffineTransformToSbox() {
     }
 }
     </pre>
-    <p class = "text-column">
-        That completes my explanation of the Sbox generation process and the math involved in its construction. It should be noted that in practical
-        implementations of AES the Sbox is usually hard-coded as an array of 8 bit integers of length 256 for performance sake. The rest of this section
+    <p class="text-column">
+        That completes my explanation of the Sbox generation process and the math involved in its construction. It
+        should be noted that in practical
+        implementations of AES the Sbox is usually hard-coded as an array of 8 bit integers of length 256 for
+        performance sake. The rest of this section
         contains complete examples of Sbox contents at different stages of generation.
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Anti-Log Table with Generator 0x03
 
 01 03 05 0f 11 33 55 ff 1a 2e 72 96 a1 f8 13 35
@@ -317,7 +412,7 @@ fc 1f 21 63 a5 f4 07 09 1b 2d 77 99 b0 cb 46 ca
 12 36 5a ee 29 7b 8d 8c 8f 8a 85 94 a7 f2 0d 17
 39 4b dd 7c 84 97 a2 fd 1c 24 6c b4 c7 52 f6 01
     </pre>
-    <pre class = "code-block">
+    <pre class="code-block">
 Log Table with Generator 0x03
 
 00 ff 19 01 32 02 1a c6 4b c7 1b 68 33 ee df 03
@@ -337,7 +432,7 @@ cc bb 3e 5a fb 60 b1 86 3b 52 a1 6c aa 55 29 9d
 44 11 92 d9 23 20 2e 89 b4 7c b8 26 77 99 e3 a5
 67 4a ed de c5 31 fe 18 0d 63 8c 80 c0 f7 70 07
     </pre>
-    <pre class = "code-block">
+    <pre class="code-block">
 Multiplicative Inverses in Gf(256)
 
 00 01 8d f6 cb 52 7b d1 e8 4f 29 c0 b0 e1 e5 c7
@@ -357,7 +452,7 @@ fb 7c 2e c3 8f b8 65 48 26 c8 12 4a ce e7 d2 62
 b1 0d d6 eb c6 0e cf ad 08 4e d7 e3 5d 50 1e b3
 5b 23 38 34 68 46 03 8c dd 9c 7d a0 cd 1a 41 1c
     </pre>
-    <pre class = "code-block">
+    <pre class="code-block">
 Final Completed AES Sbox
     00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
 ____________________________________________________
@@ -379,34 +474,50 @@ e0 - e1 f8 98 11 69 d9 8e 94 9b 1e 87 e9 ce 55 28 df
 f0 - 8c a1 89 0d bf e6 42 68 41 99 2d 0f b0 54 bb 16
     </pre>
     <h3>Key Expansion</h3>
-    <p class = "text-column">
-        We've managed to make it quite far into an encryption algorithm without discussing the key details at all, so lets start with some definitions.
-        Keys in AES can be 128, 192 or 256 bits. For simplicities sake I will only discuss the expansion of a 128 bit key, if you wish to learn about the
-        differences in each key expansion I suggest looking <a href = "https://www.samiam.org/key-schedule.html">here</a>. AES / Rijndael keys are composed
-        of "words". Each word is 4 bytes or 16 bits of data; since Rijndael operates on bytes instead of bits we will define a word as 4 bytes. It follows
-        that a 128 bit key is composed of 16 bytes, or, by our previous definition, 4 words. The key expansion must produce a total of 11 keys including the
-        original randomly generated key. Each round of key expansion creates a new key from the key created in the previous round.
+    <p class="text-column">
+        We've managed to make it quite far into an encryption algorithm without discussing the key details at all, so
+        lets start with some definitions.
+        Keys in AES can be 128, 192 or 256 bits. For simplicities sake I will only discuss the expansion of a 128 bit
+        key, if you wish to learn about the
+        differences in each key expansion I suggest looking <a href="https://www.samiam.org/key-schedule.html">here</a>.
+        AES / Rijndael keys are composed
+        of "words". Each word is 4 bytes or 16 bits of data; since Rijndael operates on bytes instead of bits we will
+        define a word as 4 bytes. It follows
+        that a 128 bit key is composed of 16 bytes, or, by our previous definition, 4 words. The key expansion must
+        produce a total of 11 keys including the
+        original randomly generated key. Each round of key expansion creates a new key from the key created in the
+        previous round.
     </p>
-    <p class = "text-column">
-        The algorithm for generating each word in a new round key is very simple for words 2, 3 and 4; it requires that the corresponding word from the
-        previous round be Xor'ed with the last word created to produce the next word. For example if we are creating word 2 of the second round key it
-        would be equal to word 1 of the second round key Xor'ed with word 2 of the first round key. This pattern holds true for words 3 and 4 of the round
+    <p class="text-column">
+        The algorithm for generating each word in a new round key is very simple for words 2, 3 and 4; it requires that
+        the corresponding word from the
+        previous round be XOR'ed with the last word created to produce the next word. For example if we are creating
+        word 2 of the second round key it
+        would be equal to word 1 of the second round key XOR'ed with word 2 of the first round key. This pattern holds
+        true for words 3 and 4 of the round
         key as well.
     </p>
-    <p class = "text-column">
-        Word 1 of each key is more complicated, it still uses the last word created and its corresponding word from the previous round, but before the
-        Xor operation is applied an additional function is applied to the last word created. This operation is referred to as the schedule_core function
-        or as the rcon function (rcon stands for round constant). This function has three steps, first circularly rotate the word one byte to the left,
-        second apply the Sbox to all four bytes (substitute each byte in the box for its corresponding Sbox byte), third Xor the word with the round
-        constant. The round constant is a word as well and it begins as {0x01, 0x0, 0x0, 0x0}; however, each time the round constant is used it is
-        multiplied by 0x02 in Gf(256) after being applied to the word. Once the schedule_core function is run the produced word is then Xor'ed with the
+    <p class="text-column">
+        Word 1 of each key is more complicated, it still uses the last word created and its corresponding word from the
+        previous round, but before the
+        XOR operation is applied an additional function is applied to the last word created. This operation is referred
+        to as the schedule_core function
+        or as the rcon function (rcon stands for round constant). This function has three steps, first circularly rotate
+        the word one byte to the left,
+        second apply the Sbox to all four bytes (substitute each byte in the box for its corresponding Sbox byte), third
+        XOR the word with the round
+        constant. The round constant is a word as well and it begins as {0x01, 0x0, 0x0, 0x0}; however, each time the
+        round constant is used it is
+        multiplied by 0x02 in Gf(256) after being applied to the word. Once the schedule_core function is run the
+        produced word is then XOR'ed with the
         first word of the previous round and the resulting word becomes the first word of the current round.
     </p>
-    <p class = "text-column">
-        This key expansion routine was very confusing to me at first despite being relatively simple (in my opinion) compared to Galois field arithmetic.
+    <p class="text-column">
+        This key expansion routine was very confusing to me at first despite being relatively simple (in my opinion)
+        compared to Galois field arithmetic.
         To make things clearer lets do an example key expansion:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Original Key
 01 0d 0c 03
 af 78 92 1a
@@ -421,8 +532,8 @@ Four Words Ago = 01 af 4c 7c
 Previous Word = 03 1a 6a d2
 Left Shift Previous Word = 1a 6a d2 03
 Apply Sbox to Word = a2 02 b5 7b
-Xor Word With Rcon = a3 02 b5 7b
-Xor Word With Four Words Ago = a2 ad f9 07
+XOR Word With Rcon = a3 02 b5 7b
+XOR Word With Four Words Ago = a2 ad f9 07
 Result: a2 ad f9 07
 
 Round Constant
@@ -431,33 +542,40 @@ Round Constant
 Key 1 Word 2
 Four Words Ago = 0d 78 e5 ac
 Previous Word = 02 ad f9 07
-Xor Words = af d5 1c ab
+XOR Words = af d5 1c ab
     </pre>
-    <p class = "text-column">
-        The above example demonstrates 1st and 2nd word generation in the Rijndael Key Schedule. For a full key expansion example please look
-        <a href = "/static_assets/aes_example/example.html">here</a>.
+    <p class="text-column">
+        The above example demonstrates 1st and 2nd word generation in the Rijndael Key Schedule. For a full key
+        expansion example please look
+        <a href="/aes_example/example.html">here</a>.
     </p>
     <h3>Add Round Key</h3>
-    <p class = "text-column">
-        We have discussed AES arithmetic, Sbox generation and key expansion; we now have all the tools necessary to dive into the AES encryption algorithm.
-        Before we start a few notes, first as in previous examples I will only be working with a 128 bit key though I will try to explain how 192 and 256
-        bit keys are applied as well for completeness. Second, the next four sections will be using a shared example with each section picking up where the
-        previous one left off. The key used for this example will be the same as the example key in the key expansion section. Finally, I will include in
-        a separate page a complete example containing a full key expansion and one full round of AES encryption over 128 bytes of data. The data we will be
+    <p class="text-column">
+        We have discussed AES arithmetic, Sbox generation and key expansion; we now have all the tools necessary to dive
+        into the AES encryption algorithm.
+        Before we start a few notes, first as in previous examples I will only be working with a 128 bit key though I
+        will try to explain how 192 and 256
+        bit keys are applied as well for completeness. Second, the next four sections will be using a shared example
+        with each section picking up where the
+        previous one left off. The key used for this example will be the same as the example key in the key expansion
+        section. Finally, I will include in
+        a separate page a complete example containing a full key expansion and one full round of AES encryption over 128
+        bytes of data. The data we will be
         encrypting is below:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Block To Encrypt
 6e 67 61 65
 65 6f 67 75
 76 6e 69 75
 72 6e 76 70
     </pre>
-    <p class = "text-column">
-        Applying a round key to a block of data is probably the simplest operation that AES performs during the encryption rounds. It consists entirely
+    <p class="text-column">
+        Applying a round key to a block of data is probably the simplest operation that AES performs during the
+        encryption rounds. It consists entirely
         of Xoring the given data block with the current round key. For example with our first round key:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Block To Encrypt
 6e 67 61 65
 65 6f 67 75
@@ -491,22 +609,30 @@ ca 17 f5 6f
 3a 8b 7b 1f 
 0e c2 99 a2
     </pre>
-    <p class = "text-column">
-        Its easy to see how this process works with 128 bits of data and 128 bits of key, but what about the 192 and 256 bit keys that AES also supports?
-        The block size for data is fixed at 128, so how can a 192 bit key be applied to 128 bits of data? The answer is that once the 192 or 256 bit key 
-        is expanded, producing 192 or 256 additional key bits for each round of expansion, the full bit sequence is split into 128 bit chunks which are 
-        applied to the data one by one. So even though a 192 bit key is expanded to 12 "keys", the full bit sequence is enough for 18 total round keys.
-        The same goes for a 256 bit key which is expanded to 14 "keys" for a total of 28 rounds of key application. 
+    <p class="text-column">
+        Its easy to see how this process works with 128 bits of data and 128 bits of key, but what about the 192 and 256
+        bit keys that AES also supports?
+        The block size for data is fixed at 128, so how can a 192 bit key be applied to 128 bits of data? The answer is
+        that once the 192 or 256 bit key
+        is expanded, producing 192 or 256 additional key bits for each round of expansion, the full bit sequence is
+        split into 128 bit chunks which are
+        applied to the data one by one. So even though a 192 bit key is expanded to 12 "keys", the full bit sequence is
+        enough for 18 total round keys.
+        The same goes for a 256 bit key which is expanded to 14 "keys" for a total of 28 rounds of key application.
     </p>
     <h3>Substitute Bytes</h3>
-    <p class = "text-column">
-        Once the data has been Xor'ed against the round key each byte is substituted for its Sbox companion. Sbox lookups are done by splitting the byte
-        into two nybbles (a nybble denote a collection of four bits). The high nybble determines the row and the low nybble the column. The completed
-        Sbox from the Sbox generation section can be used to find these bits. Interestingly, if the Sbox is rearranged so that each row is appended to the
-        end of the row preceding it, lookups can be done by converting the byte into an integer index. This works because each row is 16 columns long, so
+    <p class="text-column">
+        Once the data has been XOR'ed against the round key each byte is substituted for its Sbox companion. Sbox
+        lookups are done by splitting the byte
+        into two nybbles (a nybble denotes a collection of four bits). The high nybble determines the row and the low
+        nybble the column. The completed
+        Sbox from the Sbox generation section can be used to find these bits. Interestingly, if the Sbox is rearranged
+        so that each row is appended to the
+        end of the row preceding it, lookups can be done by converting the byte into an integer index. This works
+        because each row is 16 columns long, so
         a base 16 number will map directly to its corresponding array index.
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Bit Block Before Sub-bytes
 6f 6a 6d 66 
 ca 17 f5 6f 
@@ -520,10 +646,10 @@ a8 02 3c 33
 ab 25 ee 3a
     </pre>
     <h3>Shift Rows</h3>
-    <p class = "text-column">
+    <p class="text-column">
         After the sub-bytes operation has been applied the rows of the block are shifted thus:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Bit Block Before Shift Rows
 a8 02 3c 33 
 74 f0 e6 a8 
@@ -537,31 +663,35 @@ f0 e6 a8 74
 3a ab 25 ee
     </pre>
     <h3>Mix Columns</h3>
-    <p class = "text-column">
-        The mix columns operation is the final operation in a round of encryption. This operation takes place the fewest times as it is  omitted in both
-        the first and final rounds. It is essentially a matrix multiplication in Gf(256); this makes it different from ordinary matrix multiplication. All
-        arithmetic operations take place in the finite field rather than in ordinary integer space. Matrices can only be multiplied if their dimensions
-        match some constraints. In order to both match these constraints and to maximize diffusion during this step each 4x4 block of bytes is multiplied
+    <p class="text-column">
+        The mix columns operation is the final operation in a round of encryption. This operation takes place the fewest
+        times as it is omitted in both
+        the first and final rounds. It is essentially a matrix multiplication in Gf(256); this makes it different from
+        ordinary matrix multiplication. All
+        arithmetic operations take place in the finite field rather than in ordinary integer space. Matrices can only be
+        multiplied if their dimensions
+        are compatible. In order to both match these constraints and to maximize diffusion during this step each
+        4x4 block of bytes is multiplied
         by a 4x4 matrix:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 AES Mix Columns Matrix
 2 3 1 1
 1 2 3 1
 1 1 2 3
 3 1 1 2
     </pre>
-    <p class = "text-column">
+    <p class="text-column">
         Continuing our example from before:
     </p>
-    <pre class = "code-block">
+    <pre class="code-block">
 Bit Block Before Mix Columns
 a8 02 3c 33 
 f0 e6 a8 74 
 21 c0 80 3d 
 3a ab 25 ee
 
-Remember addition is Xor in Gf(256)
+Remember addition is XOR in Gf(256)
 
 Mix Byte (0, 0)
 (a8 * 2) + (f0 * 3) + (21 * 1) + (3a * 1)
@@ -578,30 +708,31 @@ Bit Block After Mix Columns
 46 6d 26 db
     </pre>
     <h3>Conclusion and Acknowledgements</h3>
-    <p class = "text-column">
-        This concludes my post about AES. A full dart program implementing AES-128 in ECB can be found on my github page 
-        <a href = "https://github.com/ixonstater/learning_aes">here</a>. I drew upon many different sources and articles as I was learning about AES
+    <p class="text-column">
+        This concludes my post about AES. A full dart program implementing AES-128 in ECB can be found on my github page
+        <a href="https://github.com/ixonstater/learning_aes">here</a>. I drew upon many different sources and articles
+        as I was learning about AES
         and I would like to thank the people and organizations who wrote them.
     </p>
     <ul>
-        <li class = "text-column">
-            <a href = "https://www.samiam.org/rijndael.html">Sam Trenholme</a>
+        <li class="text-column">
+            <a href="https://www.samiam.org/rijndael.html">Sam Trenholme</a>
         </li>
-        <li class = "text-column">
-            <a href = "https://www.cse.wustl.edu/~jain/cse571-11/ftp/l_05aes.pdf">Raj Jain</a>
+        <li class="text-column">
+            <a href="https://www.cse.wustl.edu/~jain/cse571-11/ftp/l_05aes.pdf">Raj Jain</a>
         </li>
-        <li class = "text-column">
-            <a href = "https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">Wikipedia</a>
+        <li class="text-column">
+            <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">Wikipedia</a>
         </li>
-        <li class = "text-column">
-            <a href = "https://kavaliro.com/wp-content/uploads/2014/03/AES.pdf">Kavaliro</a>
+        <li class="text-column">
+            <a href="https://kavaliro.com/wp-content/uploads/2014/03/AES.pdf">Kavaliro</a>
         </li>
-        <li class = "text-column">
-            <a href = "https://crypto.stackexchange.com">The community at the Crypto Stack Exchange</a>
-        </li>           
+        <li class="text-column">
+            <a href="https://crypto.stackexchange.com">The community at the Crypto Stack Exchange</a>
+        </li>
     </ul>
-    <p class = "text-column">
-        A full example of AES with our example key and data can be found <a href = "/static_assets/aes_example/example.html">here</a> for reference sake.  If you have any questions or if you find any 
-        issues with my math or explanation of AES please leave me a comment in the comment section below. Thanks for reading!
+    <p class="text-column">
+        A full example of AES with our example key and data can be found <a href="/aes_example/example.html">here</a>
+        for reference sake. Thanks for reading!
     </p>
 </div>
